@@ -1,0 +1,67 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[project]
+authors = [
+    {name = "Alban Farchi", email = "alban.farchi@ecmwf.int"},
+]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "numpy",
+    "scipy",
+    "xarray",
+]
+description = "Spherical harmonics transformation in Python"
+name = "pyshtransform"
+readme = "README.md"
+requires-python = ">= 3.11"
+version = "1.0.0"
+keywords = [
+    "spherical harmonics",
+]
+
+[project.optional-dependencies]
+dev = [
+    "dask",
+    "h5netcdf",
+    "pytest",
+    "ruff",
+]
+
+[project.urls]
+Issues = "https://github.com/aFarchi/pyshtransform/issues"
+Source = "https://github.com/aFarchi/pyshtransform"
+
+[tool.ruff]
+preview = true
+
+[tool.ruff.format]
+docstring-code-format = true
+quote-style = "single"
+
+[tool.ruff.lint]
+flake8-quotes.inline-quotes = "single"
+mccabe.max-complexity = 12
+pydocstyle.convention = "google"
+select = ["I"]
+
+[tool.pytest.ini_options]
+console_output_style = "progress"
+testpaths = [
+    "tests/",
+]
+norecursedirs = ["data"]
+filterwarnings = [
+    "error",
+    #ignore:invalid value encountered in divide:RuntimeWarning:dask._task_spec:759",
+    #"ignore:invalid value encountered in scalar divide:RuntimeWarning:dask.array.core:5090",
+]
