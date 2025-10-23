@@ -34,6 +34,7 @@ dev = [
     "dask",
     "h5netcdf",
     "pytest",
+    "rich",
     "ruff",
 ]
 
@@ -62,6 +63,4 @@ testpaths = [
 norecursedirs = ["data"]
 filterwarnings = [
     "error",
-    #ignore:invalid value encountered in divide:RuntimeWarning:dask._task_spec:759",
-    #"ignore:invalid value encountered in scalar divide:RuntimeWarning:dask.array.core:5090",
 ]

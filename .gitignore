@@ -1,9 +1,16 @@
-# pixi environments
+# jupyter
+.ipynb_checkpoints
+
+# pixi
 .pixi
 pixi.lock
 
+# pycharm
 .idea
-*.swp
-.ipynb_checkpoints
+
+# python
 dist
 __pycache__
+
+# vim
+*.swp

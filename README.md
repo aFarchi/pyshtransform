@@ -21,3 +21,5 @@ Install using `pip`:
 - write documentation
 - add type hints
 - use "optimize" in np.einsum?
+- refactor a bit the api
+- publish
