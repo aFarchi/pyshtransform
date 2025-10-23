@@ -21,4 +21,3 @@ Install using `pip`:
 - write documentation
 - add type hints
 - use "optimize" in np.einsum?
-- optimise the plm creation

@@ -7,7 +7,7 @@ import xarray as xr
 
 import pyshtransform.folding as ps_folding
 import pyshtransform.misc as ps_misc
-from pyshtransform.legendre import plmbar_d1, pre_glq
+from pyshtransform.legendre import gauss_legendre_nodes, plmbar_d1
 
 logger = logging.getLogger(__name__)
 
@@ -19,8 +19,9 @@ class NumpySphericalHarmonicsTransform(ps_folding.FoldingTransformation):
         super().__init__(dtype, truncation, factor=1)
         self.num_lat = num_lat
         self.num_lon = num_lon
-        self.lat, self.lon = self.precompute_grid_nodes()
-        self.plm, self.alm, self.pw = self.precompute_legendre_coefficients()
+        self.lat, self.lon, self.plm, self.alm, self.pw = (
+            self.precompute_legendre_coefficients()
+        )
         self.wavelet_matrix = ps_misc.compute_wavelet_matrix(
             dtype=dtype,
             truncation=truncation,
@@ -32,26 +33,22 @@ class NumpySphericalHarmonicsTransform(ps_folding.FoldingTransformation):
     def apply(self, ds_data):
         return getattr(self, self.variant)(ds_data)
 
-    def precompute_grid_nodes(self):
-        cos_t, w = pre_glq(-1, 1, self.num_lat)
+    def precompute_legendre_coefficients(self):
+        cos_t, w = gauss_legendre_nodes(self.num_lat)
         lat = np.asin(cos_t) * 180 / np.pi
         lon = np.linspace(0, 360, self.num_lon, endpoint=False)
-        return lat, lon
-
-    def precompute_legendre_coefficients(self):
-        cos_t, w = pre_glq(-1, 1, self.num_lat)
-        cos_l = np.cos(self.lat * np.pi / 180)
-        shape = (self.num_lat, self.truncation + 1, self.truncation + 1)
-        plm = np.zeros(shape, dtype=self.dtype)
-        alm = np.zeros(shape, dtype=self.dtype)
-        pw = np.zeros(shape, dtype=self.dtype)
-        indices_l, indices_m = np.tril_indices(self.truncation + 1)
-        for i in range(self.num_lat):
-            p, a = plmbar_d1(self.truncation, cos_t[i])
-            plm[i, indices_m, indices_l] = p
-            alm[i, indices_m, indices_l] = a * cos_l[i]
-            pw[i, indices_m, indices_l] = 0.5 * w[i] * p
-        return plm, alm, pw
+        cos_l = np.cos(lat * np.pi / 180)
+        p, a = plmbar_d1(self.truncation, cos_t)
+        plm = p
+        alm = a * np.expand_dims(cos_l, (1, 2))
+        pw = 0.5 * p * np.expand_dims(w, (1, 2))
+        return (
+            lat,
+            lon,
+            plm.astype(self.dtype),
+            alm.astype(self.dtype),
+            pw.astype(self.dtype),
+        )
 
     def apply_wavelet_decomposition(self, ds_data):
         if self.wavelet_matrix is None:

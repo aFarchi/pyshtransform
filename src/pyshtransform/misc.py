@@ -4,11 +4,11 @@ import numpy as np
 import xarray as xr
 from scipy.interpolate import BSpline
 
-from pyshtransform.legendre import pre_glq
+from pyshtransform.legendre import gauss_legendre_nodes
 
 
 def compute_weight(da_dim):
-    _, w = pre_glq(-1, 1, len(da_dim))
+    _, w = gauss_legendre_nodes(len(da_dim))
     return xr.DataArray(
         w * w.size / w.sum(),
         coords=(da_dim,),
