@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
-import pytest
-
 import common
+import pytest
 
 
 @pytest.fixture

@@ -1,18 +1,20 @@
 #!/usr/bin/env python
 
+import common
 import pytest
 
-import common
 import pyshtransform.numpy_sht as np_sht
 
 
-@pytest.fixture(params=[
-    dict(
-        truncation=7,
-        num_lat=8,
-        num_lon=16,
-    ),
-])
+@pytest.fixture(
+    params=[
+        dict(
+            truncation=7,
+            num_lat=8,
+            num_lon=16,
+        ),
+    ]
+)
 def config_success(request):
     return request.param
 

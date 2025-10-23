@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
+import common
 import pytest
 
-import common
 import pyshtransform.numpy_sht as np_sht
 
 

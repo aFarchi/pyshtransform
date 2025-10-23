@@ -4,7 +4,6 @@ import pyshtransform.folding as ps_folding
 
 
 class PaddingTransformation(ps_folding.FoldingTransformation):
-
     def __init__(self, dtype, truncation):
         super().__init__(dtype, truncation, factor=1)
 
@@ -13,4 +12,3 @@ class PaddingTransformation(ps_folding.FoldingTransformation):
         ds_data = ds_data.pad(l=(0, padding), m=(0, padding), constant_values=0)
         ds_data = ds_data.chunk(l=-1, m=-1)
         return self.unfold_clm(ds_data)
-

@@ -7,14 +7,15 @@ import xarray as xr
 
 import pyshtransform.folding as ps_folding
 import pyshtransform.misc as ps_misc
-from pyshtransform.legendre import pre_glq, plmbar_d1
+from pyshtransform.legendre import plmbar_d1, pre_glq
 
 logger = logging.getLogger(__name__)
 
 
 class NumpySphericalHarmonicsTransform(ps_folding.FoldingTransformation):
-
-    def __init__(self, dtype, truncation, num_lat, num_lon, spline_order, num_splines, variant):
+    def __init__(
+        self, dtype, truncation, num_lat, num_lon, spline_order, num_splines, variant
+    ):
         super().__init__(dtype, truncation, factor=1)
         self.num_lat = num_lat
         self.num_lon = num_lon
@@ -90,9 +91,11 @@ class NumpySphericalHarmonicsTransform(ps_folding.FoldingTransformation):
             output_core_dims=[['latitude', 'longitude']],
             dask='parallelized',
             output_dtypes=[self.dtype],
-            dask_gufunc_kwargs=dict(output_sizes=dict(
-                longitude=self.num_lon,
-            )),
+            dask_gufunc_kwargs=dict(
+                output_sizes=dict(
+                    longitude=self.num_lon,
+                )
+            ),
         ).assign_coords(
             latitude=self.lat,
             longitude=self.lon,
@@ -122,9 +125,11 @@ class NumpySphericalHarmonicsTransform(ps_folding.FoldingTransformation):
             output_core_dims=[['latitude', 'longitude']],
             dask='parallelized',
             output_dtypes=[self.dtype],
-            dask_gufunc_kwargs=dict(output_sizes=dict(
-                longitude=self.num_lon,
-            )),
+            dask_gufunc_kwargs=dict(
+                output_sizes=dict(
+                    longitude=self.num_lon,
+                )
+            ),
         ).assign_coords(
             latitude=self.lat,
             longitude=self.lon,
@@ -138,33 +143,38 @@ class NumpySphericalHarmonicsTransform(ps_folding.FoldingTransformation):
         ds_data = self.apply_wavelet_decomposition(ds_data)
         logger.info('applying "folded_spec_to_grid_grad_theta" transformation')
         ds_data = self.enforce_dtype(ds_data)
-        new_names = {
-            var: f'{prefix}{var}'
-            for var in ds_data
-        } if prefix is not None else {}
-        return xr.apply_ufunc(
-            generic_folded_spec_to_grid_numpy,
-            ds_data,
-            self.alm,
-            kwargs=dict(
-                num_lon=self.num_lon,
-                grad_phi=False,
-                mir_bug=False,
-            ),
-            input_core_dims=[
-                ['c', 'l', 'm'],
-                ['latitude', 'l', 'm'],
-            ],
-            output_core_dims=[['latitude', 'longitude']],
-            dask='parallelized',
-            output_dtypes=[self.dtype],
-            dask_gufunc_kwargs=dict(output_sizes=dict(
-                longitude=self.num_lon,
-            )),
-        ).assign_coords(
-            latitude=self.lat,
-            longitude=self.lon,
-        ).rename(**new_names)
+        new_names = (
+            {var: f'{prefix}{var}' for var in ds_data} if prefix is not None else {}
+        )
+        return (
+            xr.apply_ufunc(
+                generic_folded_spec_to_grid_numpy,
+                ds_data,
+                self.alm,
+                kwargs=dict(
+                    num_lon=self.num_lon,
+                    grad_phi=False,
+                    mir_bug=False,
+                ),
+                input_core_dims=[
+                    ['c', 'l', 'm'],
+                    ['latitude', 'l', 'm'],
+                ],
+                output_core_dims=[['latitude', 'longitude']],
+                dask='parallelized',
+                output_dtypes=[self.dtype],
+                dask_gufunc_kwargs=dict(
+                    output_sizes=dict(
+                        longitude=self.num_lon,
+                    )
+                ),
+            )
+            .assign_coords(
+                latitude=self.lat,
+                longitude=self.lon,
+            )
+            .rename(**new_names)
+        )
 
     def unfolded_spec_to_grid_grad_theta(self, ds_data, prefix='gt'):
         ds_data = self.fold_clm(ds_data)
@@ -174,33 +184,38 @@ class NumpySphericalHarmonicsTransform(ps_folding.FoldingTransformation):
         ds_data = self.apply_wavelet_decomposition(ds_data)
         logger.info('applying "folded_spec_to_grid_grad_phi" transformation')
         ds_data = self.enforce_dtype(ds_data)
-        new_names = {
-            var: f'{prefix}{var}'
-            for var in ds_data
-        } if prefix is not None else {}
-        return xr.apply_ufunc(
-            generic_folded_spec_to_grid_numpy,
-            ds_data,
-            self.plm,
-            kwargs=dict(
-                num_lon=self.num_lon,
-                grad_phi=True,
-                mir_bug=False,
-            ),
-            input_core_dims=[
-                ['c', 'l', 'm'],
-                ['latitude', 'l', 'm'],
-            ],
-            output_core_dims=[['latitude', 'longitude']],
-            dask='parallelized',
-            output_dtypes=[self.dtype],
-            dask_gufunc_kwargs=dict(output_sizes=dict(
-                longitude=self.num_lon,
-            )),
-        ).assign_coords(
-            latitude=self.lat,
-            longitude=self.lon,
-        ).rename(**new_names)
+        new_names = (
+            {var: f'{prefix}{var}' for var in ds_data} if prefix is not None else {}
+        )
+        return (
+            xr.apply_ufunc(
+                generic_folded_spec_to_grid_numpy,
+                ds_data,
+                self.plm,
+                kwargs=dict(
+                    num_lon=self.num_lon,
+                    grad_phi=True,
+                    mir_bug=False,
+                ),
+                input_core_dims=[
+                    ['c', 'l', 'm'],
+                    ['latitude', 'l', 'm'],
+                ],
+                output_core_dims=[['latitude', 'longitude']],
+                dask='parallelized',
+                output_dtypes=[self.dtype],
+                dask_gufunc_kwargs=dict(
+                    output_sizes=dict(
+                        longitude=self.num_lon,
+                    )
+                ),
+            )
+            .assign_coords(
+                latitude=self.lat,
+                longitude=self.lon,
+            )
+            .rename(**new_names)
+        )
 
     def unfolded_spec_to_grid_grad_phi(self, ds_data, prefix='gp'):
         ds_data = self.fold_clm(ds_data)
@@ -220,9 +235,11 @@ class NumpySphericalHarmonicsTransform(ps_folding.FoldingTransformation):
             output_core_dims=[['c', 'l', 'm']],
             dask='parallelized',
             output_dtypes=[self.dtype],
-            dask_gufunc_kwargs=dict(output_sizes=dict(
-                c=2,
-            )),
+            dask_gufunc_kwargs=dict(
+                output_sizes=dict(
+                    c=2,
+                )
+            ),
         )
 
     def grid_to_unfolded_spec(self, ds_data):
@@ -233,11 +250,7 @@ class NumpySphericalHarmonicsTransform(ps_folding.FoldingTransformation):
         ds_grid_no_grad = self.folded_spec_to_grid(ds_data)
         ds_grid_grad_theta = self.folded_spec_to_grid_grad_theta(ds_data, prefix_theta)
         ds_grid_grad_phi = self.folded_spec_to_grid_grad_phi(ds_data, prefix_phi)
-        return xr.merge((
-            ds_grid_no_grad,
-            ds_grid_grad_theta,
-            ds_grid_grad_phi
-        ))
+        return xr.merge((ds_grid_no_grad, ds_grid_grad_theta, ds_grid_grad_phi))
 
     def unfolded_spec_to_grid_full(self, ds_data, prefix_theta='gt', prefix_phi='gp'):
         ds_data = self.fold_clm(ds_data)
@@ -257,7 +270,7 @@ def apply_grad_phi_numpy(f_clm):
     shift = np.arange(f_clm.shape[-1])
     df_clm = np.zeros_like(f_clm)
     df_clm[..., 0, :, :] = shift * f_clm[..., 1, :, :]
-    df_clm[..., 1, :, :] = - shift * f_clm[..., 0, :, :]
+    df_clm[..., 1, :, :] = -shift * f_clm[..., 0, :, :]
     return df_clm
 
 
@@ -268,12 +281,12 @@ def apply_mir_bug_numpy(f_clm):
 
 
 def generic_folded_spec_to_grid_numpy(
-        f_clm,
-        plm,
-        *,
-        num_lon,
-        grad_phi,
-        mir_bug,
+    f_clm,
+    plm,
+    *,
+    num_lon,
+    grad_phi,
+    mir_bug,
 ):
     if mir_bug:
         f_clm = apply_mir_bug_numpy(f_clm)
@@ -291,7 +304,7 @@ def grid_to_folded_spec_numpy(f, pw):
     # apply ihfft
     f_clm = np.fft.ihfft(f, axis=-1, norm='backward')
     # truncate the result
-    f_clm = f_clm[..., :pw.shape[-1]]
+    f_clm = f_clm[..., : pw.shape[-1]]
     # move to real numbers
     f_clm = np.stack((f_clm.real, f_clm.imag), axis=-3)
     # apply inverse Legendre transformation

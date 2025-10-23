@@ -1,49 +1,53 @@
 #!/usr/bin/env python
 
+import common
 import pytest
 
-import common
 import pyshtransform.numpy_sht as np_sht
 
 
-@pytest.fixture(params=[
-    dict(
-        truncation=63,
-        num_lat=64,
-        num_lon=128,
-    ),
-    dict(
-        truncation=191,
-        num_lat=192,
-        num_lon=384,
-    ),
-    dict(
-        truncation=15,
-        num_lat=16,
-        num_lon=31,
-    ),
-    dict(
-        truncation=15,
-        num_lat=16,
-        num_lon=63,
-    ),
-    dict(
-        truncation=15,
-        num_lat=32,
-        num_lon=31,
-    ),
-])
+@pytest.fixture(
+    params=[
+        dict(
+            truncation=63,
+            num_lat=64,
+            num_lon=128,
+        ),
+        dict(
+            truncation=191,
+            num_lat=192,
+            num_lon=384,
+        ),
+        dict(
+            truncation=15,
+            num_lat=16,
+            num_lon=31,
+        ),
+        dict(
+            truncation=15,
+            num_lat=16,
+            num_lon=63,
+        ),
+        dict(
+            truncation=15,
+            num_lat=32,
+            num_lon=31,
+        ),
+    ]
+)
 def config_success(request):
     return request.param
 
 
-@pytest.fixture(params=[
-    dict(
-        truncation=15,
-        num_lat=14,
-        num_lon=31,
-    ),
-])
+@pytest.fixture(
+    params=[
+        dict(
+            truncation=15,
+            num_lat=14,
+            num_lon=31,
+        ),
+    ]
+)
 def config_fail(request):
     return request.param
 

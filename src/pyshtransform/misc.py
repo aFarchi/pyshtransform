@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import numpy as np
-from scipy.interpolate import BSpline
 import xarray as xr
+from scipy.interpolate import BSpline
 
 from pyshtransform.legendre import pre_glq
 
@@ -38,7 +38,7 @@ def compute_wavelet_matrix(dtype, truncation, spline_order, num_splines):
     wavelet_matrix[0] = 1
     for i in range(num_splines):
         the_nodes = np.zeros(spline_order + 2)
-        the_nodes[:] = nodes[i:i + spline_order + 2]
+        the_nodes[:] = nodes[i : i + spline_order + 2]
         the_spline = BSpline.basis_element(the_nodes, extrapolate=False)
         yy = the_spline(xx)
         yy = np.nan_to_num(yy, copy=False, nan=0)
@@ -51,6 +51,4 @@ def compute_wavelet_matrix(dtype, truncation, spline_order, num_splines):
     return xr.DataArray(
         wavelet_matrix,
         dims=('wavelet_band', 'l'),
-    ).assign_coords(
-        wavelet_band=np.arange(1+num_splines)
-    )
+    ).assign_coords(wavelet_band=np.arange(1 + num_splines))

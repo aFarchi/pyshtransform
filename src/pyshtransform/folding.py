@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 
 class FoldingTransformation:
-
     def __init__(self, dtype, truncation, factor):
         self.dtype = dtype
         self.truncation = truncation
@@ -67,11 +66,13 @@ class FoldingTransformation:
             output_core_dims=[['c', 'l', 'm']],
             dask='parallelized',
             output_dtypes=[self.dtype],
-            dask_gufunc_kwargs=dict(output_sizes=dict(
-                c=2,
-                l=self.truncation + 1,
-                m=self.truncation + 1,
-            )),
+            dask_gufunc_kwargs=dict(
+                output_sizes=dict(
+                    c=2,
+                    l=self.truncation + 1,
+                    m=self.truncation + 1,
+                )
+            ),
         )
 
     def unfold_clm(self, ds_data):
@@ -113,19 +114,21 @@ def precompute_folding_coefficients(input_truncation, target_truncation, dtype, 
     full_indices_m = np.repeat(full_indices_m, 2)
     full_factors = np.tile(np.array([1, -1]), tiles).astype(dtype)
     # apply correction factor if needed
-    full_factors[2*(input_truncation+1):] *= factor
+    full_factors[2 * (input_truncation + 1) :] *= factor
     # drop coefficients beyond the internal truncation
     indices_clm = []
     indices_c = []
     indices_l = []
     indices_m = []
     factors = []
-    for (i_clm, (i_c, i_l, i_m, f)) in enumerate(zip(
-        full_indices_c,
-        full_indices_l,
-        full_indices_m,
-        full_factors,
-    )):
+    for i_clm, (i_c, i_l, i_m, f) in enumerate(
+        zip(
+            full_indices_c,
+            full_indices_l,
+            full_indices_m,
+            full_factors,
+        )
+    ):
         if i_l <= target_truncation and i_m <= target_truncation:
             indices_clm.append(i_clm)
             indices_c.append(i_c)
