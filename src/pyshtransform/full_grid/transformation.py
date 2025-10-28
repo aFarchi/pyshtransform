@@ -3,9 +3,13 @@ import logging
 import xarray as xr
 
 from pyshtransform.folding.transformation import FoldingTransformation
-from pyshtransform.wavelet import compute_wavelet_matrix
-from pyshtransform.full_grid.core import apply_wavelet_decomposition_numpy, generic_folded_spec_to_grid_numpy, grid_to_folded_spec_numpy
+from pyshtransform.full_grid.core import (
+    apply_wavelet_decomposition_numpy,
+    generic_folded_spec_to_grid_numpy,
+    grid_to_folded_spec_numpy,
+)
 from pyshtransform.full_grid.grid import FullGrid
+from pyshtransform.wavelet import compute_wavelet_matrix
 
 logger = logging.getLogger(__name__)
 

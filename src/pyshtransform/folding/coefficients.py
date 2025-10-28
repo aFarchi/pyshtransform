@@ -1,7 +1,7 @@
 import numpy as np
 
-class FoldingCoefficients:
 
+class FoldingCoefficients:
     def __init__(self, input_truncation, target_truncation, dtype, factor):
         # full set of coefficients first
         tiles = (input_truncation + 1) * (input_truncation + 2) // 2

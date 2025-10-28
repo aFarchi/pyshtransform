@@ -1,6 +1,7 @@
 import numpy as np
 import xarray as xr
 
+
 def legendre(n, z):
     p1 = 1
     p2 = 0
