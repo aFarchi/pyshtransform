@@ -1,9 +1,7 @@
-#!/usr/bin/env python
-
 import common
 import pytest
 
-import pyshtransform.numpy_sht as np_sht
+from pyshtransform.full_grid.transformation import FullGridSphericalHarmonicsTransform
 
 
 @pytest.fixture(
@@ -25,7 +23,7 @@ def ds_06_wavelets(config):
 
 
 def construct_transformation(ds_06_wavelets):
-    return np_sht.NumpySphericalHarmonicsTransform(
+    return FullGridSphericalHarmonicsTransform(
         truncation=ds_06_wavelets.truncation,
         num_lat=len(ds_06_wavelets.latitude),
         num_lon=len(ds_06_wavelets.longitude),

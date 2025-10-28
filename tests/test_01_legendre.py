@@ -1,10 +1,8 @@
-#!/usr/bin/env python
-
 import common
 import pytest
 import xarray as xr
 
-import pyshtransform.numpy_sht as np_sht
+from pyshtransform.full_grid.transformation import FullGridSphericalHarmonicsTransform
 
 
 @pytest.fixture(
@@ -37,7 +35,7 @@ def config(request):
 
 def test_legendre(config):
     ds_test = common.open_ds_01_legendre(**config)
-    transformation = np_sht.NumpySphericalHarmonicsTransform(
+    transformation = FullGridSphericalHarmonicsTransform(
         truncation=ds_test.truncation,
         num_lat=ds_test.num_lat,
         num_lon=ds_test.num_lon,
@@ -49,13 +47,13 @@ def test_legendre(config):
     transformation.precompute_folding_coefficients(ds_test.truncation)
     ds_out = xr.Dataset(
         data_vars=dict(
-            plm=(('latitude', 'm', 'l'), transformation.plm),
-            alm=(('latitude', 'm', 'l'), transformation.alm),
-            pw=(('latitude', 'm', 'l'), transformation.pw),
+            plm=(('latitude', 'm', 'l'), transformation.grid.plm),
+            alm=(('latitude', 'm', 'l'), transformation.grid.alm),
+            pw=(('latitude', 'm', 'l'), transformation.grid.pw),
         ),
         coords=dict(
-            latitude=('latitude', transformation.lat),
-            longitude=('longitude', transformation.lon),
+            latitude=('latitude', transformation.grid.lat),
+            longitude=('longitude', transformation.grid.lon),
         ),
     )
     common.test_function(

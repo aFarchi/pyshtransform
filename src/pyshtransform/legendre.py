@@ -1,5 +1,5 @@
 import numpy as np
-
+import xarray as xr
 
 def legendre(n, z):
     p1 = 1
@@ -39,6 +39,14 @@ def gauss_legendre_nodes(num_lat, max_iter=1000, atol=1e-15):
         zeros = np.concat((z[:-1], -z[::-1]))
         weights = np.concat((w[:-1], w[::-1]))
     return zeros, weights
+
+
+def gauss_legendre_weights(da_dim):
+    _, w = gauss_legendre_nodes(len(da_dim))
+    return xr.DataArray(
+        w * w.size / w.sum(),
+        coords=(da_dim,),
+    )
 
 
 def plmbar_d1(lmax, z):

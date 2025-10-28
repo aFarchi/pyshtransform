@@ -1,0 +1,17 @@
+import numpy as np
+
+from pyshtransform.legendre import gauss_legendre_nodes, plmbar_d1
+
+
+class FullGrid:
+    def __init__(
+        self, dtype, truncation, num_lat, num_lon,
+    ):
+        cos_t, w = gauss_legendre_nodes(num_lat)
+        self.lat = np.asin(cos_t) * 180 / np.pi
+        self.lon = np.linspace(0, 360, num_lon, endpoint=False)
+        cos_l = np.cos(self.lat * np.pi / 180)
+        p, a = plmbar_d1(truncation, cos_t)
+        self.plm = p.astype(dtype)
+        self.alm = (a * np.expand_dims(cos_l, (1, 2))).astype(dtype)
+        self.pw = (0.5 * p * np.expand_dims(w, (1, 2))).astype(dtype)

@@ -1,9 +1,7 @@
-#!/usr/bin/env python
-
 import common
 import pytest
 
-import pyshtransform.numpy_sht as np_sht
+from pyshtransform.full_grid.transformation import FullGridSphericalHarmonicsTransform
 
 
 @pytest.fixture(
@@ -53,7 +51,7 @@ def config_fail(request):
 
 
 def construct_transformation(config):
-    return np_sht.NumpySphericalHarmonicsTransform(
+    return FullGridSphericalHarmonicsTransform(
         **config,
         spline_order=None,
         num_splines=None,

@@ -1,18 +1,6 @@
-#!/usr/bin/env python
-
 import numpy as np
 import xarray as xr
 from scipy.interpolate import BSpline
-
-from pyshtransform.legendre import gauss_legendre_nodes
-
-
-def compute_weight(da_dim):
-    _, w = gauss_legendre_nodes(len(da_dim))
-    return xr.DataArray(
-        w * w.size / w.sum(),
-        coords=(da_dim,),
-    )
 
 
 def compute_wavelet_matrix(dtype, truncation, spline_order, num_splines):
@@ -46,7 +34,7 @@ def compute_wavelet_matrix(dtype, truncation, spline_order, num_splines):
 
     # check that the sum is correct
     if not np.allclose(wavelet_matrix.sum(axis=0), 2 * np.ones(truncation + 1)):
-        raise Exception
+        raise ValueError('wavelet coefficients do not sum up to one')
 
     return xr.DataArray(
         wavelet_matrix,

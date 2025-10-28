@@ -1,11 +1,9 @@
-#!/usr/bin/env python
-
-import pyshtransform.folding as ps_folding
+from pyshtransform.folding.transformation import FoldingTransformation
 
 
-class PaddingTransformation(ps_folding.FoldingTransformation):
+class PaddingTransformation(FoldingTransformation):
     def __init__(self, dtype, truncation):
-        super().__init__(dtype, truncation, factor=1)
+        super().__init__(dtype=dtype, truncation=truncation, factor=1)
 
     def apply(self, ds_data):
         padding = self.truncation + 1 - len(ds_data.l)

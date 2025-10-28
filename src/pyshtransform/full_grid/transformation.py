@@ -1,28 +1,29 @@
-#!/usr/bin/env python
-
 import logging
 
-import numpy as np
 import xarray as xr
 
-import pyshtransform.folding as ps_folding
-import pyshtransform.misc as ps_misc
-from pyshtransform.legendre import gauss_legendre_nodes, plmbar_d1
+from pyshtransform.folding.transformation import FoldingTransformation
+from pyshtransform.wavelet import compute_wavelet_matrix
+from pyshtransform.full_grid.core import apply_wavelet_decomposition_numpy, generic_folded_spec_to_grid_numpy, grid_to_folded_spec_numpy
+from pyshtransform.full_grid.grid import FullGrid
 
 logger = logging.getLogger(__name__)
 
 
-class NumpySphericalHarmonicsTransform(ps_folding.FoldingTransformation):
+class FullGridSphericalHarmonicsTransform(FoldingTransformation):
     def __init__(
         self, dtype, truncation, num_lat, num_lon, spline_order, num_splines, variant
     ):
-        super().__init__(dtype, truncation, factor=1)
+        super().__init__(dtype=dtype, truncation=truncation, factor=1)
         self.num_lat = num_lat
         self.num_lon = num_lon
-        self.lat, self.lon, self.plm, self.alm, self.pw = (
-            self.precompute_legendre_coefficients()
+        self.grid = FullGrid(
+            dtype=dtype,
+            truncation=truncation,
+            num_lat=num_lat,
+            num_lon=num_lon,
         )
-        self.wavelet_matrix = ps_misc.compute_wavelet_matrix(
+        self.wavelet_matrix = compute_wavelet_matrix(
             dtype=dtype,
             truncation=truncation,
             spline_order=spline_order,
@@ -32,23 +33,6 @@ class NumpySphericalHarmonicsTransform(ps_folding.FoldingTransformation):
 
     def apply(self, ds_data):
         return getattr(self, self.variant)(ds_data)
-
-    def precompute_legendre_coefficients(self):
-        cos_t, w = gauss_legendre_nodes(self.num_lat)
-        lat = np.asin(cos_t) * 180 / np.pi
-        lon = np.linspace(0, 360, self.num_lon, endpoint=False)
-        cos_l = np.cos(lat * np.pi / 180)
-        p, a = plmbar_d1(self.truncation, cos_t)
-        plm = p
-        alm = a * np.expand_dims(cos_l, (1, 2))
-        pw = 0.5 * p * np.expand_dims(w, (1, 2))
-        return (
-            lat,
-            lon,
-            plm.astype(self.dtype),
-            alm.astype(self.dtype),
-            pw.astype(self.dtype),
-        )
 
     def apply_wavelet_decomposition(self, ds_data):
         if self.wavelet_matrix is None:
@@ -75,7 +59,7 @@ class NumpySphericalHarmonicsTransform(ps_folding.FoldingTransformation):
         return xr.apply_ufunc(
             generic_folded_spec_to_grid_numpy,
             ds_data,
-            self.plm,
+            self.grid.plm,
             kwargs=dict(
                 num_lon=self.num_lon,
                 grad_phi=False,
@@ -94,8 +78,8 @@ class NumpySphericalHarmonicsTransform(ps_folding.FoldingTransformation):
                 )
             ),
         ).assign_coords(
-            latitude=self.lat,
-            longitude=self.lon,
+            latitude=self.grid.lat,
+            longitude=self.grid.lon,
         )
 
     def unfolded_spec_to_grid(self, ds_data):
@@ -109,7 +93,7 @@ class NumpySphericalHarmonicsTransform(ps_folding.FoldingTransformation):
         return xr.apply_ufunc(
             generic_folded_spec_to_grid_numpy,
             ds_data,
-            self.plm,
+            self.grid.plm,
             kwargs=dict(
                 num_lon=self.num_lon,
                 grad_phi=False,
@@ -128,8 +112,8 @@ class NumpySphericalHarmonicsTransform(ps_folding.FoldingTransformation):
                 )
             ),
         ).assign_coords(
-            latitude=self.lat,
-            longitude=self.lon,
+            latitude=self.grid.lat,
+            longitude=self.grid.lon,
         )
 
     def unfolded_spec_to_grid_mir(self, ds_data):
@@ -147,7 +131,7 @@ class NumpySphericalHarmonicsTransform(ps_folding.FoldingTransformation):
             xr.apply_ufunc(
                 generic_folded_spec_to_grid_numpy,
                 ds_data,
-                self.alm,
+                self.grid.alm,
                 kwargs=dict(
                     num_lon=self.num_lon,
                     grad_phi=False,
@@ -167,8 +151,8 @@ class NumpySphericalHarmonicsTransform(ps_folding.FoldingTransformation):
                 ),
             )
             .assign_coords(
-                latitude=self.lat,
-                longitude=self.lon,
+                latitude=self.grid.lat,
+                longitude=self.grid.lon,
             )
             .rename(**new_names)
         )
@@ -188,7 +172,7 @@ class NumpySphericalHarmonicsTransform(ps_folding.FoldingTransformation):
             xr.apply_ufunc(
                 generic_folded_spec_to_grid_numpy,
                 ds_data,
-                self.plm,
+                self.grid.plm,
                 kwargs=dict(
                     num_lon=self.num_lon,
                     grad_phi=True,
@@ -208,8 +192,8 @@ class NumpySphericalHarmonicsTransform(ps_folding.FoldingTransformation):
                 ),
             )
             .assign_coords(
-                latitude=self.lat,
-                longitude=self.lon,
+                latitude=self.grid.lat,
+                longitude=self.grid.lon,
             )
             .rename(**new_names)
         )
@@ -224,7 +208,7 @@ class NumpySphericalHarmonicsTransform(ps_folding.FoldingTransformation):
         return xr.apply_ufunc(
             grid_to_folded_spec_numpy,
             ds_data,
-            self.pw,
+            self.grid.pw,
             input_core_dims=[
                 ['latitude', 'longitude'],
                 ['latitude', 'l', 'm'],
@@ -252,57 +236,3 @@ class NumpySphericalHarmonicsTransform(ps_folding.FoldingTransformation):
     def unfolded_spec_to_grid_full(self, ds_data, prefix_theta='gt', prefix_phi='gp'):
         ds_data = self.fold_clm(ds_data)
         return self.folded_spec_to_grid_full(ds_data, prefix_theta, prefix_phi)
-
-
-def apply_wavelet_decomposition_numpy(f_clm, wavelet_matrix):
-    return np.einsum(
-        '...l,wl->...wl',
-        f_clm,
-        wavelet_matrix,
-        casting='no',
-    )
-
-
-def apply_grad_phi_numpy(f_clm):
-    shift = np.arange(f_clm.shape[-1])
-    df_clm = np.zeros_like(f_clm)
-    df_clm[..., 0, :, :] = shift * f_clm[..., 1, :, :]
-    df_clm[..., 1, :, :] = -shift * f_clm[..., 0, :, :]
-    return df_clm
-
-
-def apply_mir_bug_numpy(f_clm):
-    f_clm = f_clm.copy()
-    f_clm[..., :, -1, -1] = 0
-    return f_clm
-
-
-def generic_folded_spec_to_grid_numpy(
-    f_clm,
-    plm,
-    *,
-    num_lon,
-    grad_phi,
-    mir_bug,
-):
-    if mir_bug:
-        f_clm = apply_mir_bug_numpy(f_clm)
-    if grad_phi:
-        f_clm = apply_grad_phi_numpy(f_clm)
-    # apply Legendre transformation
-    f = np.einsum('...jm,imj->...im', f_clm, plm, casting='no')
-    # move to complex numbers
-    f = f[..., 0, :, :] + 1j * f[..., 1, :, :]
-    # apply hfft
-    return np.fft.hfft(f, n=num_lon, axis=-1, norm='backward')
-
-
-def grid_to_folded_spec_numpy(f, pw):
-    # apply ihfft
-    f_clm = np.fft.ihfft(f, axis=-1, norm='backward')
-    # truncate the result
-    f_clm = f_clm[..., : pw.shape[-1]]
-    # move to real numbers
-    f_clm = np.stack((f_clm.real, f_clm.imag), axis=-3)
-    # apply inverse Legendre transformation
-    return np.einsum('...im,iml->...lm', f_clm, pw, casting='no')

@@ -1,13 +1,11 @@
-#!/usr/bin/env python
-
 import common
 import pytest
 
-import pyshtransform.numpy_sht as np_sht
+from pyshtransform.full_grid.transformation import FullGridSphericalHarmonicsTransform
 
 
 def construct_transformation(ds_grid_ref):
-    return np_sht.NumpySphericalHarmonicsTransform(
+    return FullGridSphericalHarmonicsTransform(
         truncation=ds_grid_ref.truncation,
         num_lat=len(ds_grid_ref.latitude),
         num_lon=len(ds_grid_ref.longitude),
