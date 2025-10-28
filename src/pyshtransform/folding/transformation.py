@@ -10,14 +10,14 @@ logger = logging.getLogger(__name__)
 
 
 class FoldingTransformation:
-    def __init__(self, dtype, truncation, factor):
+    def __init__(self, dtype: str, truncation: int, factor: float):
         self.dtype = dtype
         self.truncation = truncation
         self.factor = factor
-        self.input_truncation = None
-        self.folding_coefficients = None
+        self.input_truncation: int | None = None
+        self.folding_coefficients: FoldingCoefficients | None = None
 
-    def precompute_folding_coefficients(self, input_truncation):
+    def precompute_folding_coefficients(self, input_truncation: int) -> None:
         # check if the coefficients have already been pre-computed
         if self.input_truncation == input_truncation:
             return
@@ -33,17 +33,18 @@ class FoldingTransformation:
         # save input truncation
         self.input_truncation = input_truncation
 
-    def enforce_dtype(self, ds_data):
+    def enforce_dtype(self, ds_data: xr.Dataset) -> xr.Dataset:
         logger.info(f'enforcing dtype "{self.dtype}" before transformation')
         return ds_data.astype(self.dtype)
 
-    def fold_clm(self, ds_data):
+    def fold_clm(self, ds_data: xr.Dataset) -> xr.Dataset:
         logger.info('applying "fold_clm" transformation')
         num_clm = len(ds_data.clm)
         input_truncation = int((math.sqrt(4 * num_clm + 1) - 1) / 2) - 1
         self.precompute_folding_coefficients(input_truncation)
         ds_data = self.enforce_dtype(ds_data)
-        return xr.apply_ufunc(
+        assert self.folding_coefficients is not None
+        ds_data = xr.apply_ufunc(
             fold_clm_numpy,
             ds_data,
             self.folding_coefficients.c,
@@ -74,12 +75,14 @@ class FoldingTransformation:
                 )
             ),
         )
+        return ds_data
 
-    def unfold_clm(self, ds_data):
+    def unfold_clm(self, ds_data: xr.Dataset) -> xr.Dataset:
         logger.info('applying "unfold_clm" transformation')
         self.precompute_folding_coefficients(self.truncation)
         ds_data = self.enforce_dtype(ds_data)
-        return xr.apply_ufunc(
+        assert self.folding_coefficients is not None
+        ds_data = xr.apply_ufunc(
             unfold_clm_numpy,
             ds_data,
             self.folding_coefficients.c,
@@ -103,3 +106,4 @@ class FoldingTransformation:
             dask='parallelized',
             output_dtypes=[self.dtype],
         )
+        return ds_data

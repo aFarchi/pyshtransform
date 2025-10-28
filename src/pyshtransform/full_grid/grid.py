@@ -6,10 +6,10 @@ from pyshtransform.legendre import gauss_legendre_nodes, plmbar_d1
 class FullGrid:
     def __init__(
         self,
-        dtype,
-        truncation,
-        num_lat,
-        num_lon,
+        dtype: str,
+        truncation: int,
+        num_lat: int,
+        num_lon: int,
     ):
         cos_t, w = gauss_legendre_nodes(num_lat)
         self.lat = np.asin(cos_t) * 180 / np.pi

@@ -1,11 +1,13 @@
+import xarray as xr
+
 from pyshtransform.folding.transformation import FoldingTransformation
 
 
 class PaddingTransformation(FoldingTransformation):
-    def __init__(self, dtype, truncation):
+    def __init__(self, dtype: str, truncation: int):
         super().__init__(dtype=dtype, truncation=truncation, factor=1)
 
-    def apply(self, ds_data):
+    def apply(self, ds_data: xr.Dataset) -> xr.Dataset:
         padding = self.truncation + 1 - len(ds_data.l)
         ds_data = ds_data.pad(l=(0, padding), m=(0, padding), constant_values=0)
         ds_data = ds_data.chunk(l=-1, m=-1)

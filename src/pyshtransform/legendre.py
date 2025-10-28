@@ -2,9 +2,14 @@ import numpy as np
 import xarray as xr
 
 
-def legendre(n, z):
-    p1 = 1
-    p2 = 0
+def legendre(
+    n: int, z: np.ndarray[tuple[int], np.dtype[np.float64]]
+) -> tuple[
+    np.ndarray[tuple[int], np.dtype[np.float64]],
+    np.ndarray[tuple[int], np.dtype[np.float64]],
+]:
+    p1 = np.ones(len(z))
+    p2 = np.zeros(len(z))
     for j in range(1, n + 1):
         # j * P_j(z) = (2 * j - 1) * z * P_(j-1)(z) - (j - 1) * P_(j-2)(z)
         p3 = p2
@@ -15,11 +20,16 @@ def legendre(n, z):
     return p1, pp
 
 
-def gauss_legendre_nodes(num_lat, max_iter=1000, atol=1e-15):
+def gauss_legendre_nodes(
+    num_lat: int, max_iter: int = 1000, atol: float = 1e-15
+) -> tuple[
+    np.ndarray[tuple[int], np.dtype[np.float64]],
+    np.ndarray[tuple[int], np.dtype[np.float64]],
+]:
     # initial guess for the first (num_lat+1)//2 zeros
     z = np.cos(np.pi * (1 + np.arange((num_lat + 1) // 2) - 0.25) / (num_lat + 0.5))
     # derivative
-    pp = 0
+    pp = np.zeros(len(z))
     for _ in range(max_iter):
         # recursion
         z_previous = z
@@ -42,7 +52,7 @@ def gauss_legendre_nodes(num_lat, max_iter=1000, atol=1e-15):
     return zeros, weights
 
 
-def gauss_legendre_weights(da_dim):
+def gauss_legendre_weights(da_dim: xr.DataArray) -> xr.DataArray:
     _, w = gauss_legendre_nodes(len(da_dim))
     return xr.DataArray(
         w * w.size / w.sum(),
@@ -50,30 +60,35 @@ def gauss_legendre_weights(da_dim):
     )
 
 
-def plmbar_d1(lmax, z):
+def plmbar_d1(
+    lmax: int, z: np.ndarray[tuple[int], np.dtype[np.float64]]
+) -> tuple[
+    np.ndarray[tuple[int, int, int], np.dtype[np.float64]],
+    np.ndarray[tuple[int, int, int], np.dtype[np.float64]],
+]:
     p = np.zeros((len(z), lmax + 1, lmax + 1))
     dp1 = np.zeros((len(z), lmax + 1, lmax + 1))
 
     scalef = 1.0e-280
 
     sqr = np.sqrt(1 + np.arange(2 * lmax + 1))
-    l, m = np.tril_indices(lmax + 1)
-    f1_flat = sqr[2 * l] * sqr[2 * l - 2] / (sqr[l + m - 1] * sqr[l - m - 1])
+    il, im = np.tril_indices(lmax + 1)
+    f1_flat = sqr[2 * il] * sqr[2 * il - 2] / (sqr[il + im - 1] * sqr[il - im - 1])
     f2_flat = (
-        sqr[2 * l]
-        * sqr[l - m - 2]
-        * sqr[l + m - 2]
-        / (sqr[2 * l - 4] * sqr[l + m - 1] * sqr[l - m - 1])
+        sqr[2 * il]
+        * sqr[il - im - 2]
+        * sqr[il + im - 2]
+        / (sqr[2 * il - 4] * sqr[il + im - 1] * sqr[il - im - 1])
     )
     f1 = np.zeros((lmax + 1, lmax + 1))
     f2 = np.zeros((lmax + 1, lmax + 1))
-    f1[l, m] = f1_flat
-    f2[l, m] = f2_flat
+    f1[il, im] = f1_flat
+    f2[il, im] = f2_flat
 
     u = np.sqrt((1.0 - z) * (1.0 + z))
-    pm2 = 1.0
-    p[..., 0, 0] = 1.0
-    dp1[..., 0, 0] = 0.0
+    pm2 = np.ones(len(z))  # 1.0
+    p[..., 0, 0] = 1
+    dp1[..., 0, 0] = 0
     pm1 = sqr[2] * z
     p[..., 0, 1] = pm1
     dp1[..., 0, 1] = sqr[2]
@@ -85,7 +100,7 @@ def plmbar_d1(lmax, z):
         pm1 = plm
 
     pmm = scalef
-    rescalem = 1.0 / scalef
+    rescalem = np.ones(len(z)) / scalef
     for m in range(1, lmax):
         rescalem = rescalem * u
         pmm = pmm * sqr[2 * m] / sqr[2 * m - 1]

@@ -3,7 +3,9 @@ import xarray as xr
 from scipy.interpolate import BSpline
 
 
-def compute_wavelet_matrix(dtype, truncation, spline_order, num_splines):
+def compute_wavelet_matrix(
+    dtype: str, truncation: int, spline_order: int | None, num_splines: int | None
+) -> xr.DataArray | None:
     if spline_order is None or num_splines is None or num_splines < 2:
         return None
 
