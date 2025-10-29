@@ -21,6 +21,7 @@ def apply_wavelet_decomposition_numpy(
         f_clm,
         wavelet_matrix,
         casting='no',
+        optimize=True,
     )
     return f_clm
 
@@ -93,7 +94,7 @@ def generic_folded_spec_to_grid_numpy(
     if grad_phi:
         f_clm = apply_grad_phi_numpy(f_clm)
     # apply Legendre transformation
-    f = np.einsum('...jm,imj->...im', f_clm, plm, casting='no')
+    f = np.einsum('...jm,imj->...im', f_clm, plm, casting='no', optimize=True)
     # move to complex numbers
     f = f[..., 0, :, :] + 1j * f[..., 1, :, :]
     # apply hfft
@@ -121,6 +122,6 @@ def grid_to_folded_spec_numpy(
     f_clm = np.stack((f_clm.real, f_clm.imag), axis=-3)
     # apply inverse Legendre transformation
     f_grid: np.ndarray[tuple[int, ...], np.dtype[np.float64]] = np.einsum(
-        '...im,iml->...lm', f_clm, pw, casting='no'
+        '...im,iml->...lm', f_clm, pw, casting='no', optimize=True
     )
     return f_grid
