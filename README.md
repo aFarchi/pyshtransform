@@ -17,7 +17,6 @@ Install using `pip`:
 
 ## Todo-list
 
-- write docstrings
 - write documentation
 - add type hints
 - use "optimize" in np.einsum?

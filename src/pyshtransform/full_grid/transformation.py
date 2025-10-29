@@ -1,3 +1,5 @@
+"""Implementation of the spectral transformations using full Gaussian grids."""
+
 import logging
 
 import xarray as xr
@@ -15,6 +17,16 @@ logger = logging.getLogger(__name__)
 
 
 class FullGridSphericalHarmonicsTransform(FoldingTransformation):
+    """Spectral transformation using full Gaussian grids.
+
+    Attributes:
+        num_lat: Number of latitude nodes.
+        num_lon: Number of longitude nodes.
+        grid: Full Gaussian grid.
+        wavelet_matrix: Wavelet matrix.
+        variant: Transformation to apply in the `apply` method.
+    """
+
     def __init__(
         self,
         dtype: str,
@@ -25,6 +37,17 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
         num_splines: int | None,
         variant: str,
     ):
+        """Initialises the spectral transformation.
+
+        Args:
+            dtype: Output floating-point data type.
+            truncation: Output truncation.
+            num_lat: Number of latitude nodes.
+            num_lon: Number of longitude nodes.
+            spline_order: Spline order for the wavelet matrix.
+            num_splines: Number of splines for the wavelet matrix.
+            variant: Transformation to apply in the `apply` method.
+        """
         super().__init__(dtype=dtype, truncation=truncation, factor=1)
         self.num_lat = num_lat
         self.num_lon = num_lon
@@ -43,10 +66,26 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
         self.variant = variant
 
     def apply(self, ds_data: xr.Dataset) -> xr.Dataset:
+        """Applies the selected transformation.
+
+        Args:
+            ds_data: Input dataset.
+
+        Returns:
+            Output dataset.
+        """
         ds_data = getattr(self, self.variant)(ds_data)
         return ds_data
 
     def apply_wavelet_decomposition(self, ds_data: xr.Dataset) -> xr.Dataset:
+        """Applies the wavelet decomposition in spectral space.
+
+        Args:
+            ds_data: Dataset containing folded spectral coefficients.
+
+        Returns:
+            Dataset containing folded spectral coefficients decomposed into wavelets.
+        """
         if self.wavelet_matrix is None:
             return ds_data
         logger.info('applying "wavelet_decomposition" transformation')
@@ -66,6 +105,14 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
         return ds_data
 
     def folded_spec_to_grid(self, ds_data: xr.Dataset) -> xr.Dataset:
+        """Applies the transformation from folded spectral- to grid space.
+
+        Args:
+            ds_data: Dataset containing folded spectral coefficients.
+
+        Returns:
+            Dataset containing grid coefficients.
+        """
         ds_data = self.apply_wavelet_decomposition(ds_data)
         logger.info('applying "folded_spec_to_grid" transformation')
         ds_data = self.enforce_dtype(ds_data)
@@ -97,10 +144,26 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
         return ds_data
 
     def unfolded_spec_to_grid(self, ds_data: xr.Dataset) -> xr.Dataset:
+        """Applies the transformation from unfolded spectral- to grid space.
+
+        Args:
+            ds_data: Dataset containing unfolded spectral coefficients.
+
+        Returns:
+            Dataset containing grid coefficients.
+        """
         ds_data = self.fold_clm(ds_data)
         return self.folded_spec_to_grid(ds_data)
 
     def folded_spec_to_grid_mir(self, ds_data: xr.Dataset) -> xr.Dataset:
+        """Applies the transformation from folded spectral- to grid space with MIR bug.
+
+        Args:
+            ds_data: Dataset containing folded spectral coefficients.
+
+        Returns:
+            Dataset containing grid coefficients.
+        """
         ds_data = self.apply_wavelet_decomposition(ds_data)
         logger.info('applying "folded_spec_to_grid_mir" transformation')
         ds_data = self.enforce_dtype(ds_data)
@@ -132,12 +195,29 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
         return ds_data
 
     def unfolded_spec_to_grid_mir(self, ds_data: xr.Dataset) -> xr.Dataset:
+        """Applies the transformation from unfolded spectral- to grid space with MIR bug.
+
+        Args:
+            ds_data: Dataset containing unfolded spectral coefficients.
+
+        Returns:
+            Dataset containing grid coefficients.
+        """
         ds_data = self.fold_clm(ds_data)
         return self.folded_spec_to_grid_mir(ds_data)
 
     def folded_spec_to_grid_grad_theta(
         self, ds_data: xr.Dataset, prefix: str = 'gt'
     ) -> xr.Dataset:
+        """Applies the transformation from folded spectral- to grid space with gradient with respect to latitude.
+
+        Args:
+            ds_data: Dataset containing folded spectral coefficients.
+            prefix: Prefix added in front of data variable names.
+
+        Returns:
+            Dataset containing grid coefficients.
+        """
         ds_data = self.apply_wavelet_decomposition(ds_data)
         logger.info('applying "folded_spec_to_grid_grad_theta" transformation')
         ds_data = self.enforce_dtype(ds_data)
@@ -178,12 +258,30 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
     def unfolded_spec_to_grid_grad_theta(
         self, ds_data: xr.Dataset, prefix: str = 'gt'
     ) -> xr.Dataset:
+        """Applies the transformation from unfolded spectral- to grid space with gradient with respect to latitude.
+
+        Args:
+            ds_data: Dataset containing unfolded spectral coefficients.
+            prefix: Prefix added in front of data variable names.
+
+        Returns:
+            Dataset containing grid coefficients.
+        """
         ds_data = self.fold_clm(ds_data)
         return self.folded_spec_to_grid_grad_theta(ds_data, prefix)
 
     def folded_spec_to_grid_grad_phi(
         self, ds_data: xr.Dataset, prefix: str = 'gp'
     ) -> xr.Dataset:
+        """Applies the transformation from folded spectral- to grid space with gradient with respect to longitude.
+
+        Args:
+            ds_data: Dataset containing folded spectral coefficients.
+            prefix: Prefix added in front of data variable names.
+
+        Returns:
+            Dataset containing grid coefficients.
+        """
         ds_data = self.apply_wavelet_decomposition(ds_data)
         logger.info('applying "folded_spec_to_grid_grad_phi" transformation')
         ds_data = self.enforce_dtype(ds_data)
@@ -224,10 +322,27 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
     def unfolded_spec_to_grid_grad_phi(
         self, ds_data: xr.Dataset, prefix: str = 'gp'
     ) -> xr.Dataset:
+        """Applies the transformation from unfolded spectral- to grid space with gradient with respect to longitude.
+
+        Args:
+            ds_data: Dataset containing unfolded spectral coefficients.
+            prefix: Prefix added in front of data variable names.
+
+        Returns:
+            Dataset containing grid coefficients.
+        """
         ds_data = self.fold_clm(ds_data)
         return self.folded_spec_to_grid_grad_phi(ds_data, prefix)
 
     def grid_to_folded_spec(self, ds_data: xr.Dataset) -> xr.Dataset:
+        """Applies the transformation from grid- to folded spectral space.
+
+        Args:
+            ds_data: Dataset containing grid coefficients.
+
+        Returns:
+            Dataset containing folded spectral coefficients.
+        """
         logger.info('applying "grid_to_folded_spec" transformation')
         ds_data = self.enforce_dtype(ds_data)
         ds_data = xr.apply_ufunc(
@@ -250,12 +365,30 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
         return ds_data
 
     def grid_to_unfolded_spec(self, ds_data: xr.Dataset) -> xr.Dataset:
+        """Applies the transformation from grid- to unfolded spectral space.
+
+        Args:
+            ds_data: Dataset containing grid coefficients.
+
+        Returns:
+            Dataset containing unfolded spectral coefficients.
+        """
         ds_data = self.grid_to_folded_spec(ds_data)
         return self.unfold_clm(ds_data)
 
     def folded_spec_to_grid_full(
         self, ds_data: xr.Dataset, prefix_theta: str = 'gt', prefix_phi: str = 'gp'
     ) -> xr.Dataset:
+        """Applies the transformation from folded spectral- to grid space with horizontal gradients.
+
+        Args:
+            ds_data: Dataset containing folded spectral coefficients.
+            prefix_theta: Prefix added in front of data variable names for gradient with respect to latitude.
+            prefix_phi: Prefix added in front of data variable names for gradient with respect to longitude.
+
+        Returns:
+            Dataset containing grid coefficients with horizontal gradients.
+        """
         ds_grid_no_grad = self.folded_spec_to_grid(ds_data)
         ds_grid_grad_theta = self.folded_spec_to_grid_grad_theta(ds_data, prefix_theta)
         ds_grid_grad_phi = self.folded_spec_to_grid_grad_phi(ds_data, prefix_phi)
@@ -264,5 +397,15 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
     def unfolded_spec_to_grid_full(
         self, ds_data: xr.Dataset, prefix_theta: str = 'gt', prefix_phi: str = 'gp'
     ) -> xr.Dataset:
+        """Applies the transformation from unfolded spectral- to grid space with horizontal gradients.
+
+        Args:
+            ds_data: Dataset containing unfolded spectral coefficients.
+            prefix_theta: Prefix added in front of data variable names for gradient with respect to latitude.
+            prefix_phi: Prefix added in front of data variable names for gradient with respect to longitude.
+
+        Returns:
+            Dataset containing grid coefficients with horizontal gradients.
+        """
         ds_data = self.fold_clm(ds_data)
         return self.folded_spec_to_grid_full(ds_data, prefix_theta, prefix_phi)

@@ -1,10 +1,34 @@
+"""Indices and factors for the folding transformation."""
+
 import numpy as np
 
 
 class FoldingCoefficients:
+    """Folding coefficients.
+
+    This class is essentially a container class. It contains
+    the indices and factors which are used to fold / unfold
+    arrays in spectral space.
+
+    Attributes:
+        clm: One-dimensional indices of the unfolded spectral coefficients.
+        c: Indices for the `c` dimension in folded spectral space.
+        l: Indices for the `l` dimension in folded spectral space.
+        m: Indices for the `m` dimension in folded spectral space.
+        f: Correction factors.
+    """
+
     def __init__(
         self, input_truncation: int, target_truncation: int, dtype: str, factor: float
     ):
+        """Initialises the folding coefficients.
+
+        Args:
+            input_truncation: Input truncation.
+            target_truncation: Output truncation.
+            dtype: Floating-point data type.
+            factor: Correction factor.
+        """
         # full set of coefficients first
         tiles = (input_truncation + 1) * (input_truncation + 2) // 2
         full_indices_c = np.tile(np.arange(2), tiles)

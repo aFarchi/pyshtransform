@@ -1,3 +1,5 @@
+"""Implementation of the folding transformation in spectral space."""
+
 import logging
 import math
 
@@ -10,7 +12,24 @@ logger = logging.getLogger(__name__)
 
 
 class FoldingTransformation:
+    """Folding transformation in spectral space.
+
+    Attributes:
+        dtype: Output floating-point data type.
+        truncation: Output truncation.
+        factor: Correction factor.
+        input_truncation: Truncation at which the `folding_coefficients` are computed.
+        folding_coefficients: Indices and factors for the transformation.
+    """
+
     def __init__(self, dtype: str, truncation: int, factor: float):
+        """Initialises the folding transformation.
+
+        Args:
+            dtype: Output floating-point data type.
+            truncation: Output truncation.
+            factor: Correction factor.
+        """
         self.dtype = dtype
         self.truncation = truncation
         self.factor = factor
@@ -18,6 +37,11 @@ class FoldingTransformation:
         self.folding_coefficients: FoldingCoefficients | None = None
 
     def precompute_folding_coefficients(self, input_truncation: int) -> None:
+        """Pre-computes the `folding_coefficients`.
+
+        Args:
+            input_truncation: Truncation at which the `folding_coefficients` are computed.
+        """
         # check if the coefficients have already been pre-computed
         if self.input_truncation == input_truncation:
             return
@@ -34,10 +58,26 @@ class FoldingTransformation:
         self.input_truncation = input_truncation
 
     def enforce_dtype(self, ds_data: xr.Dataset) -> xr.Dataset:
+        """Enforces data type.
+
+        Args:
+            ds_data: Dataset.
+
+        Returns:
+            Dataset with the appropriate floating-point data type.
+        """
         logger.info(f'enforcing dtype "{self.dtype}" before transformation')
         return ds_data.astype(self.dtype)
 
     def fold_clm(self, ds_data: xr.Dataset) -> xr.Dataset:
+        """Transforms the dataset from unfolded to folded spectral space.
+
+        Args:
+            ds_data: Dataset containing unfolded spectral coefficients.
+
+        Returns:
+            Dataset containing folded spectral coefficients.
+        """
         logger.info('applying "fold_clm" transformation')
         num_clm = len(ds_data.clm)
         input_truncation = int((math.sqrt(4 * num_clm + 1) - 1) / 2) - 1
@@ -78,6 +118,14 @@ class FoldingTransformation:
         return ds_data
 
     def unfold_clm(self, ds_data: xr.Dataset) -> xr.Dataset:
+        """Transforms the dataset from folded to unfolded spectral space.
+
+        Args:
+            ds_data: Dataset containing folded spectral coefficients.
+
+        Returns:
+            Dataset containing unfolded spectral coefficients.
+        """
         logger.info('applying "unfold_clm" transformation')
         self.precompute_folding_coefficients(self.truncation)
         ds_data = self.enforce_dtype(ds_data)

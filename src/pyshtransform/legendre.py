@@ -1,3 +1,5 @@
+"""Implementation of the Gauss--Legendre quadrature."""
+
 import numpy as np
 import xarray as xr
 
@@ -8,6 +10,16 @@ def legendre(
     np.ndarray[tuple[int], np.dtype[np.float64]],
     np.ndarray[tuple[int], np.dtype[np.float64]],
 ]:
+    """Computes the n-th Legendre polynomial and its first derivative.
+
+    Args:
+        n: Order of the Legendre polynomial.
+        z: Nodes at which the polynomial should be applied.
+
+    Returns:
+        The value of the n-th Legendre polynomial at the given nodes
+        and the associated derivatives.
+    """
     p1 = np.ones(len(z))
     p2 = np.zeros(len(z))
     for j in range(1, n + 1):
@@ -26,6 +38,16 @@ def gauss_legendre_nodes(
     np.ndarray[tuple[int], np.dtype[np.float64]],
     np.ndarray[tuple[int], np.dtype[np.float64]],
 ]:
+    """Computes the nodes and weights for the Gauss--Legendre quadrature.
+
+    Args:
+        num_lat: Number of latitude nodes.
+        max_iter: Maximum number of iteration in Newton's root-finding algorithm.
+        atol: Absolute tolerance in Newton's root-finding algorithm.
+
+    Returns:
+        The nodes for the Gauss--Legendre quadrature and the associated weights.
+    """
     # initial guess for the first (num_lat+1)//2 zeros
     z = np.cos(np.pi * (1 + np.arange((num_lat + 1) // 2) - 0.25) / (num_lat + 0.5))
     # derivative
@@ -53,6 +75,19 @@ def gauss_legendre_nodes(
 
 
 def gauss_legendre_weights(da_dim: xr.DataArray) -> xr.DataArray:
+    """Computes the weights for the Gauss--Legendre quadrature.
+
+    This function assumes that `da_dim` is a data array containing the
+    nodes for the Gauss--Legendre quadrature and returns the associated
+    weights. In practice, it does not use the values of `da_dim`, but only its
+    length.
+
+    Args:
+        da_dim: Data array containing the nodes for the Gauss--Legendre quadrature.
+
+    Returns:
+        The weights for the Gauss--Legendre quadrature.
+    """
     _, w = gauss_legendre_nodes(len(da_dim))
     return xr.DataArray(
         w * w.size / w.sum(),
@@ -66,6 +101,15 @@ def plmbar_d1(
     np.ndarray[tuple[int, int, int], np.dtype[np.float64]],
     np.ndarray[tuple[int, int, int], np.dtype[np.float64]],
 ]:
+    """Computes the Plm and Alm coefficients for the Legendre transformation.
+
+    Args:
+        lmax: Maximum value of l.
+        z: Gauss--Legendre nodes at which to compute the coefficients.
+
+    Returns:
+        The Plm and Alm coefficients.
+    """
     p = np.zeros((len(z), lmax + 1, lmax + 1))
     dp1 = np.zeros((len(z), lmax + 1, lmax + 1))
 

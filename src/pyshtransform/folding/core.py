@@ -1,3 +1,5 @@
+"""Core functions for the folding transformation."""
+
 import numpy as np
 
 
@@ -12,6 +14,21 @@ def fold_clm_numpy(
     truncation: int,
     dtype: str,
 ) -> np.ndarray[tuple[int, ...], np.dtype[np.float64]]:
+    """Folds spectral coefficients.
+
+    Args:
+        unfolded_f_clm: Unfolded spectral coefficients.
+        c: Indices for the `c` dimension in folded spectral space.
+        l: Indices for the `l` dimension in folded spectral space.
+        m: Indices for the `m` dimension in folded spectral space.
+        f: Correction factors.
+        clm: One-dimensional indices of the unfolded spectral coefficients.
+        truncation: Output truncation.
+        dtype: Output floating-point data type.
+
+    Returns:
+        Folded spectral coefficients.
+    """
     shape = list(unfolded_f_clm.shape)
     batch_shape = shape[:-1]
     folded_shape = [2] + [truncation + 1] * 2
@@ -32,6 +49,21 @@ def unfold_clm_numpy(
     truncation: int,
     dtype: str,
 ) -> np.ndarray[tuple[int, ...], np.dtype[np.float64]]:
+    """Unfolds spectral coefficients.
+
+    Args:
+        folded_f_clm: Folded spectral coefficients.
+        c: Indices for the `c` dimension in folded spectral space.
+        l: Indices for the `l` dimension in folded spectral space.
+        m: Indices for the `m` dimension in folded spectral space.
+        f: Correction factors.
+        clm: One-dimensional indices of the unfolded spectral coefficients.
+        truncation: Output truncation.
+        dtype: Output floating-point data type.
+
+    Returns:
+        Unfolded spectral coefficients.
+    """
     shape = list(folded_f_clm.shape)
     batch_shape = shape[:-3]
     unfolded_shape = [(truncation + 1) * (truncation + 2)]

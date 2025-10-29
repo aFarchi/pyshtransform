@@ -1,9 +1,21 @@
+"""Full Gaussian grid."""
+
 import numpy as np
 
 from pyshtransform.legendre import gauss_legendre_nodes, plmbar_d1
 
 
 class FullGrid:
+    """Full Gaussian grid.
+
+    Attributes:
+        lat: Latitude nodes.
+        lon: Longitude nodes.
+        plm: Plm coefficients for the spectral transformation.
+        alm: Alm coefficients for the spectral transformation.
+        pw: Gauss--Legendre weights for the spectral transformation.
+    """
+
     def __init__(
         self,
         dtype: str,

@@ -1,3 +1,5 @@
+"""Implementation of a wavelet matrix in spectral space."""
+
 import numpy as np
 import xarray as xr
 from scipy.interpolate import BSpline
@@ -6,6 +8,17 @@ from scipy.interpolate import BSpline
 def compute_wavelet_matrix(
     dtype: str, truncation: int, spline_order: int | None, num_splines: int | None
 ) -> xr.DataArray | None:
+    """Computes a wavelet matrix.
+
+    Args:
+        dtype: Floating-point data type.
+        truncation: Truncation.
+        spline_order: Order of the splines.
+        num_splines: Number of splines.
+
+    Returns:
+        Data array containing the wavelet matrix.
+    """
     if spline_order is None or num_splines is None or num_splines < 2:
         return None
 
