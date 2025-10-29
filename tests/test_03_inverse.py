@@ -7,27 +7,32 @@ from pyshtransform.full_grid.transformation import FullGridSphericalHarmonicsTra
 @pytest.fixture(
     params=[
         dict(
-            truncation=63,
+            unfolded_truncation=1279,
+            folded_truncation=63,
             num_lat=64,
             num_lon=128,
         ),
         dict(
-            truncation=191,
+            unfolded_truncation=1279,
+            folded_truncation=191,
             num_lat=192,
             num_lon=384,
         ),
         dict(
-            truncation=15,
+            unfolded_truncation=1279,
+            folded_truncation=15,
             num_lat=16,
             num_lon=31,
         ),
         dict(
-            truncation=15,
+            unfolded_truncation=1279,
+            folded_truncation=15,
             num_lat=16,
             num_lon=63,
         ),
         dict(
-            truncation=15,
+            unfolded_truncation=1279,
+            folded_truncation=15,
             num_lat=32,
             num_lon=31,
         ),
@@ -40,7 +45,8 @@ def config_success(request):
 @pytest.fixture(
     params=[
         dict(
-            truncation=15,
+            unfolded_truncation=1279,
+            folded_truncation=15,
             num_lat=14,
             num_lon=31,
         ),
@@ -56,7 +62,7 @@ def construct_transformation(config):
         spline_order=None,
         num_splines=None,
         dtype='float64',
-        variant=None,
+        variant='',
     )
 
 

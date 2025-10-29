@@ -33,6 +33,7 @@ keywords = [
 dev = [
     "dask",
     "h5netcdf",
+    "ipykernel",
     "mypy",
     "pytest",
     "rich",

@@ -18,6 +18,4 @@ Install using `pip`:
 ## Todo-list
 
 - write documentation
-- add type hints
 - use "optimize" in np.einsum?
-- publish

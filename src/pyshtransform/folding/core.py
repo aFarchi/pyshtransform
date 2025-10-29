@@ -11,7 +11,7 @@ def fold_clm_numpy(
     f: np.ndarray[tuple[int], np.dtype[np.float64]],
     clm: np.ndarray[tuple[int], np.dtype[np.int_]],
     *,
-    truncation: int,
+    folded_truncation: int,
     dtype: str,
 ) -> np.ndarray[tuple[int, ...], np.dtype[np.float64]]:
     """Folds spectral coefficients.
@@ -23,7 +23,7 @@ def fold_clm_numpy(
         m: Indices for the `m` dimension in folded spectral space.
         f: Correction factors.
         clm: One-dimensional indices of the unfolded spectral coefficients.
-        truncation: Output truncation.
+        folded_truncation: Output truncation.
         dtype: Output floating-point data type.
 
     Returns:
@@ -31,7 +31,7 @@ def fold_clm_numpy(
     """
     shape = list(unfolded_f_clm.shape)
     batch_shape = shape[:-1]
-    folded_shape = [2] + [truncation + 1] * 2
+    folded_shape = [2, folded_truncation + 1, folded_truncation + 1]
     total_shape = tuple(batch_shape + folded_shape)
     folded_f_clm = np.zeros(total_shape, dtype=dtype)
     folded_f_clm[..., c, l, m] = f * unfolded_f_clm[..., clm]
@@ -46,7 +46,7 @@ def unfold_clm_numpy(
     f: np.ndarray[tuple[int], np.dtype[np.float64]],
     clm: np.ndarray[tuple[int], np.dtype[np.int_]],
     *,
-    truncation: int,
+    unfolded_truncation: int,
     dtype: str,
 ) -> np.ndarray[tuple[int, ...], np.dtype[np.float64]]:
     """Unfolds spectral coefficients.
@@ -58,7 +58,7 @@ def unfold_clm_numpy(
         m: Indices for the `m` dimension in folded spectral space.
         f: Correction factors.
         clm: One-dimensional indices of the unfolded spectral coefficients.
-        truncation: Output truncation.
+        unfolded_truncation: Output truncation.
         dtype: Output floating-point data type.
 
     Returns:
@@ -66,7 +66,7 @@ def unfold_clm_numpy(
     """
     shape = list(folded_f_clm.shape)
     batch_shape = shape[:-3]
-    unfolded_shape = [(truncation + 1) * (truncation + 2)]
+    unfolded_shape = [(unfolded_truncation + 1) * (unfolded_truncation + 2)]
     total_shape = tuple(batch_shape + unfolded_shape)
     unfolded_f_clm = np.zeros(total_shape, dtype=dtype)
     unfolded_f_clm[..., clm] = folded_f_clm[..., c, l, m] / f

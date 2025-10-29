@@ -44,13 +44,14 @@ def ds_05_gradient_dt_dphi(config):
 
 def construct_transformation(ds_05_gradient_t):
     return FullGridSphericalHarmonicsTransform(
-        truncation=ds_05_gradient_t.truncation,
+        dtype='float64',
+        unfolded_truncation=1279,
+        folded_truncation=ds_05_gradient_t.truncation,
         num_lat=len(ds_05_gradient_t.latitude),
         num_lon=len(ds_05_gradient_t.longitude),
         spline_order=None,
         num_splines=None,
-        dtype='float64',
-        variant=None,
+        variant='',
     )
 
 

@@ -24,58 +24,52 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
         num_lon: Number of longitude nodes.
         grid: Full Gaussian grid.
         wavelet_matrix: Wavelet matrix.
-        variant: Transformation to apply in the `apply` method.
     """
 
     def __init__(
         self,
         dtype: str,
-        truncation: int,
+        unfolded_truncation: int,
+        folded_truncation: int,
         num_lat: int,
         num_lon: int,
         spline_order: int | None,
         num_splines: int | None,
-        variant: str,
+        variant: str | None,
     ):
         """Initialises the spectral transformation.
 
         Args:
             dtype: Output floating-point data type.
-            truncation: Output truncation.
+            unfolded_truncation: Truncation in unfolded spectral space.
+            folded_truncation: Truncation in folded spectral space.
             num_lat: Number of latitude nodes.
             num_lon: Number of longitude nodes.
             spline_order: Spline order for the wavelet matrix.
             num_splines: Number of splines for the wavelet matrix.
             variant: Transformation to apply in the `apply` method.
         """
-        super().__init__(dtype=dtype, truncation=truncation, factor=1)
+        super().__init__(
+            dtype=dtype,
+            unfolded_truncation=unfolded_truncation,
+            folded_truncation=folded_truncation,
+            factor=1,
+            variant=variant,
+        )
         self.num_lat = num_lat
         self.num_lon = num_lon
         self.grid = FullGrid(
             dtype=dtype,
-            truncation=truncation,
+            truncation=folded_truncation,
             num_lat=num_lat,
             num_lon=num_lon,
         )
         self.wavelet_matrix = compute_wavelet_matrix(
             dtype=dtype,
-            truncation=truncation,
+            truncation=folded_truncation,
             spline_order=spline_order,
             num_splines=num_splines,
         )
-        self.variant = variant
-
-    def apply(self, ds_data: xr.Dataset) -> xr.Dataset:
-        """Applies the selected transformation.
-
-        Args:
-            ds_data: Input dataset.
-
-        Returns:
-            Output dataset.
-        """
-        ds_data = getattr(self, self.variant)(ds_data)
-        return ds_data
 
     def apply_wavelet_decomposition(self, ds_data: xr.Dataset) -> xr.Dataset:
         """Applies the wavelet decomposition in spectral space.

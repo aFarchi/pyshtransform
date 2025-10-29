@@ -6,13 +6,14 @@ from pyshtransform.full_grid.transformation import FullGridSphericalHarmonicsTra
 
 def construct_transformation(ds_grid_ref):
     return FullGridSphericalHarmonicsTransform(
-        truncation=ds_grid_ref.truncation,
+        dtype='float64',
+        unfolded_truncation=1279,
+        folded_truncation=ds_grid_ref.truncation,
         num_lat=len(ds_grid_ref.latitude),
         num_lon=len(ds_grid_ref.longitude),
         spline_order=None,
         num_splines=None,
-        dtype='float64',
-        variant=None,
+        variant='',
     )
 
 

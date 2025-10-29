@@ -36,15 +36,15 @@ def config(request):
 def test_legendre(config):
     ds_test = common.open_ds_01_legendre(**config)
     transformation = FullGridSphericalHarmonicsTransform(
-        truncation=ds_test.truncation,
+        dtype='float64',
+        unfolded_truncation=ds_test.truncation,
+        folded_truncation=ds_test.truncation,
         num_lat=ds_test.num_lat,
         num_lon=ds_test.num_lon,
         spline_order=None,
         num_splines=None,
-        dtype='float64',
         variant=None,
     )
-    transformation.precompute_folding_coefficients(ds_test.truncation)
     ds_out = xr.Dataset(
         data_vars=dict(
             plm=(('latitude', 'm', 'l'), transformation.grid.plm),

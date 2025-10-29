@@ -10,6 +10,7 @@ pyshtransform = { path = ".", editable = true }
 [dependencies]
 dask = ">=2025.10.0,<2026"
 h5netcdf = ">=1.7.3,<2"
+ipykernel = ">=7.1.0,<8"
 mypy = ">=1.18.2,<2"
 numpy = ">=2.3.3,<3"
 pixi-pycharm = ">=0.0.9,<0.0.10"

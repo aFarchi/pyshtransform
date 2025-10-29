@@ -19,26 +19,30 @@ class FoldingCoefficients:
     """
 
     def __init__(
-        self, input_truncation: int, target_truncation: int, dtype: str, factor: float
+        self,
+        unfolded_truncation: int,
+        folded_truncation: int,
+        dtype: str,
+        factor: float,
     ):
         """Initialises the folding coefficients.
 
         Args:
-            input_truncation: Input truncation.
-            target_truncation: Output truncation.
+            unfolded_truncation: Truncation in unfolded spectral space.
+            folded_truncation: Truncation in folded spectral space.
             dtype: Floating-point data type.
             factor: Correction factor.
         """
         # full set of coefficients first
-        tiles = (input_truncation + 1) * (input_truncation + 2) // 2
+        tiles = (unfolded_truncation + 1) * (unfolded_truncation + 2) // 2
         full_indices_c = np.tile(np.arange(2), tiles)
-        full_indices_m, full_indices_l = np.triu_indices(input_truncation + 1)
+        full_indices_m, full_indices_l = np.triu_indices(unfolded_truncation + 1)
         full_indices_l = np.repeat(full_indices_l, 2)
         full_indices_m = np.repeat(full_indices_m, 2)
         full_factors = np.tile(np.array([1, -1]), tiles).astype(dtype)
 
         # apply correction factor if needed
-        full_factors[2 * (input_truncation + 1) :] *= factor
+        full_factors[2 * (unfolded_truncation + 1) :] *= factor
 
         # drop coefficients beyond the internal truncation
         indices_clm = []
@@ -54,7 +58,7 @@ class FoldingCoefficients:
                 full_factors,
             )
         ):
-            if i_l <= target_truncation and i_m <= target_truncation:
+            if i_l <= folded_truncation and i_m <= folded_truncation:
                 indices_clm.append(i_clm)
                 indices_c.append(i_c)
                 indices_l.append(i_l)

@@ -15,47 +15,55 @@ class FoldingTransformation:
     """Folding transformation in spectral space.
 
     Attributes:
-        dtype: Output floating-point data type.
-        truncation: Output truncation.
+        dtype: Floating-point data type.
+        unfolded_truncation: Truncation in unfolded spectral space.
+        folded_truncation: Truncation in folded spectral space.
         factor: Correction factor.
-        input_truncation: Truncation at which the `folding_coefficients` are computed.
         folding_coefficients: Indices and factors for the transformation.
+        variant: Transformation to apply in the `apply` method.
     """
 
-    def __init__(self, dtype: str, truncation: int, factor: float):
+    def __init__(
+        self,
+        dtype: str,
+        unfolded_truncation: int,
+        folded_truncation: int,
+        factor: float,
+        variant: str | None,
+    ):
         """Initialises the folding transformation.
 
         Args:
             dtype: Output floating-point data type.
-            truncation: Output truncation.
+            unfolded_truncation: Truncation in unfolded spectral space.
+            folded_truncation: Truncation in folded spectral space.
             factor: Correction factor.
         """
         self.dtype = dtype
-        self.truncation = truncation
+        self.unfolded_truncation = unfolded_truncation
+        self.folded_truncation = folded_truncation
         self.factor = factor
-        self.input_truncation: int | None = None
-        self.folding_coefficients: FoldingCoefficients | None = None
+        self.folding_coefficients = FoldingCoefficients(
+            unfolded_truncation=unfolded_truncation,
+            folded_truncation=folded_truncation,
+            dtype=dtype,
+            factor=factor,
+        )
+        self.variant = variant
 
-    def precompute_folding_coefficients(self, input_truncation: int) -> None:
-        """Pre-computes the `folding_coefficients`.
+    def apply(self, ds_data: xr.Dataset) -> xr.Dataset:
+        """Applies the selected transformation.
 
         Args:
-            input_truncation: Truncation at which the `folding_coefficients` are computed.
+            ds_data: Input dataset.
+
+        Returns:
+            Output dataset.
         """
-        # check if the coefficients have already been pre-computed
-        if self.input_truncation == input_truncation:
-            return
-        # use input truncation if internal truncation is unspecified
-        self.truncation = self.truncation or input_truncation
-        # compute the folding coefficients
-        self.folding_coefficients = FoldingCoefficients(
-            input_truncation=input_truncation,
-            target_truncation=self.truncation,
-            dtype=self.dtype,
-            factor=self.factor,
-        )
-        # save input truncation
-        self.input_truncation = input_truncation
+        if self.variant is None:
+            raise ValueError('please specify a variant')
+        ds_data = getattr(self, self.variant)(ds_data)
+        return ds_data
 
     def enforce_dtype(self, ds_data: xr.Dataset) -> xr.Dataset:
         """Enforces data type.
@@ -80,10 +88,12 @@ class FoldingTransformation:
         """
         logger.info('applying "fold_clm" transformation')
         num_clm = len(ds_data.clm)
-        input_truncation = int((math.sqrt(4 * num_clm + 1) - 1) / 2) - 1
-        self.precompute_folding_coefficients(input_truncation)
+        unfolded_truncation = int((math.sqrt(4 * num_clm + 1) - 1) / 2) - 1
+        if unfolded_truncation != self.unfolded_truncation:
+            raise ValueError(
+                f'unfolded truncation is incorrect, expected {self.unfolded_truncation}, got {unfolded_truncation}'
+            )
         ds_data = self.enforce_dtype(ds_data)
-        assert self.folding_coefficients is not None
         ds_data = xr.apply_ufunc(
             fold_clm_numpy,
             ds_data,
@@ -93,7 +103,7 @@ class FoldingTransformation:
             self.folding_coefficients.f,
             self.folding_coefficients.clm,
             kwargs=dict(
-                truncation=self.truncation,
+                folded_truncation=self.folded_truncation,
                 dtype=self.dtype,
             ),
             input_core_dims=[
@@ -110,8 +120,8 @@ class FoldingTransformation:
             dask_gufunc_kwargs=dict(
                 output_sizes=dict(
                     c=2,
-                    l=self.truncation + 1,
-                    m=self.truncation + 1,
+                    l=self.folded_truncation + 1,
+                    m=self.folded_truncation + 1,
                 )
             ),
         )
@@ -127,9 +137,15 @@ class FoldingTransformation:
             Dataset containing unfolded spectral coefficients.
         """
         logger.info('applying "unfold_clm" transformation')
-        self.precompute_folding_coefficients(self.truncation)
         ds_data = self.enforce_dtype(ds_data)
-        assert self.folding_coefficients is not None
+        if (
+            len(ds_data.c) != 2
+            or len(ds_data.l) != self.folded_truncation + 1
+            or len(ds_data.m) != self.folded_truncation + 1
+        ):
+            raise ValueError(
+                f'folded shape is incorrect, expected 2*{self.folded_truncation + 1}*{self.folded_truncation + 1}, got {len(ds_data.c)}*{len(ds_data.l)}*{len(ds_data.m)}'
+            )
         ds_data = xr.apply_ufunc(
             unfold_clm_numpy,
             ds_data,
@@ -139,7 +155,7 @@ class FoldingTransformation:
             self.folding_coefficients.f,
             self.folding_coefficients.clm,
             kwargs=dict(
-                truncation=self.truncation,
+                unfolded_truncation=self.unfolded_truncation,
                 dtype=self.dtype,
             ),
             input_core_dims=[

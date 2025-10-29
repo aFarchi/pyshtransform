@@ -24,13 +24,14 @@ def ds_06_wavelets(config):
 
 def construct_transformation(ds_06_wavelets):
     return FullGridSphericalHarmonicsTransform(
-        truncation=ds_06_wavelets.truncation,
+        dtype='float64',
+        unfolded_truncation=1279,
+        folded_truncation=ds_06_wavelets.truncation,
         num_lat=len(ds_06_wavelets.latitude),
         num_lon=len(ds_06_wavelets.longitude),
         spline_order=ds_06_wavelets.spline_order,
         num_splines=ds_06_wavelets.num_splines,
-        dtype='float64',
-        variant=None,
+        variant='',
     )
 
 
