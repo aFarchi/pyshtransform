@@ -72,12 +72,10 @@ def generic_folded_spec_to_grid_numpy(
     """Applies a generic transformation from folded spectral- to grid space.
 
     This function covers three cases:
-    - to compute the "regular" transformation, provide the Plm coefficients as `plm`
-      and use `grad_phi=False`;
-    - to compute the transformation with gradient with respect to longitude, provide
-     the Plm coefficients as `plm` and use `grad_phi=True`;
-    - to compute the transformation with gradient with respect to latitude, provide
-     the Alm coefficients as `plm` and use `grad_phi=False`.
+
+    - to compute the "regular" transformation, provide the Plm coefficients as `plm` and use `grad_phi=False`;
+    - to compute the transformation with gradient with respect to longitude, provide the Plm coefficients as `plm` and use `grad_phi=True`;
+    - to compute the transformation with gradient with respect to latitude, provide the Alm coefficients as `plm` and use `grad_phi=False`.
 
     Args:
         f_clm: Folded spectral coefficients.

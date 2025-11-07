@@ -7,7 +7,7 @@ from scipy.interpolate import BSpline
 
 def compute_wavelet_matrix(
     dtype: str, truncation: int, spline_order: int | None, num_splines: int | None
-) -> xr.DataArray | None:
+) -> xr.DataArray:
     """Computes a wavelet matrix.
 
     Args:
@@ -20,7 +20,7 @@ def compute_wavelet_matrix(
         Data array containing the wavelet matrix.
     """
     if spline_order is None or num_splines is None or num_splines < 2:
-        return None
+        return xr.DataArray()
 
     # initialise wavelet matrix
     wavelet_matrix = np.zeros((1 + num_splines, truncation + 1), dtype=dtype)

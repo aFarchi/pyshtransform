@@ -64,11 +64,15 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
             num_lat=num_lat,
             num_lon=num_lon,
         )
-        self.wavelet_matrix = compute_wavelet_matrix(
-            dtype=dtype,
-            truncation=folded_truncation,
-            spline_order=spline_order,
-            num_splines=num_splines,
+        self.wavelet_matrix = (
+            None
+            if spline_order is None or num_splines is None or num_splines < 2
+            else compute_wavelet_matrix(
+                dtype=dtype,
+                truncation=folded_truncation,
+                spline_order=spline_order,
+                num_splines=num_splines,
+            )
         )
 
     def apply_wavelet_decomposition(self, ds_data: xr.Dataset) -> xr.Dataset:

@@ -18,3 +18,33 @@ Install using `pip`:
 ## Todo-list
 
 - write documentation
+
+## Snippets
+
+Code linting and formatting:
+```sh
+pixi run ruff check
+pixi run ruff format
+```
+
+Static type checking:
+```sh
+pixi run mypy src/
+```
+
+Run test suite:
+```sh
+pixi run pytest -vs tests/
+```
+
+Generate api doc:
+```sh
+pixi run sphinx-apidoc -f -o docs/source/api/ src/
+```
+
+Generate doc:
+```sh
+pixi run sphinx-build -M clean docs/source/ docs/build/
+pixi run sphinx-build -M html docs/source/ docs/build/
+```
+
