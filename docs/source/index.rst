@@ -13,7 +13,7 @@ pyshtransform documentation
 
 ``pyshtransform`` is a python toolbox that implements spherical harmonics transformations.
 
-- `Documentation (this page) <https://pyshqg.readthedocs.io>`_
+- `Documentation (this page) <https://pyshtransform.readthedocs.io>`_
 - `Source code <https://github.com/aFarchi/pyshtransform>`_
 - `Issue tracker <https://github.com/aFarchi/pyshtransform/issues>`_
 

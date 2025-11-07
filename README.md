@@ -2,6 +2,7 @@
 
 [![PyPI version](https://badge.fury.io/py/pyshtransform.svg)](https://badge.fury.io/py/pyshtransform)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Documentation status](https://app.readthedocs.org/projects/pyshtransform/badge/?version=latest)](https://app.readthedocs.org/projects/pyshtransform/badge/?version=latest)
 
 `pyshtransform` is a python toolbox that implements spherical harmonics transformations.
 
