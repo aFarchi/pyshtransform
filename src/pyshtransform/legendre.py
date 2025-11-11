@@ -19,6 +19,10 @@ def legendre(
     Returns:
         The value of the n-th Legendre polynomial at the given nodes
         and the associated derivatives.
+
+    Notes:
+        This function has been inspired by the implementation of
+        the corresponding fortran function in SHTOOLS (https://shtools.github.io/SHTOOLS/).
     """
     p1 = np.ones(len(z))
     p2 = np.zeros(len(z))
@@ -109,6 +113,10 @@ def plmbar_d1(
 
     Returns:
         The Plm and Alm coefficients.
+
+    Notes:
+        This function has been inspired by the implementation of
+        the corresponding fortran function in SHTOOLS (https://shtools.github.io/SHTOOLS/).
     """
     p = np.zeros((len(z), lmax + 1, lmax + 1))
     dp1 = np.zeros((len(z), lmax + 1, lmax + 1))
@@ -130,7 +138,7 @@ def plmbar_d1(
     f2[il, im] = f2_flat
 
     u = np.sqrt((1.0 - z) * (1.0 + z))
-    pm2 = np.ones(len(z))  # 1.0
+    pm2 = np.ones(len(z))
     p[..., 0, 0] = 1
     dp1[..., 0, 0] = 0
     pm1 = sqr[2] * z

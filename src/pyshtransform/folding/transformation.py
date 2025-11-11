@@ -160,14 +160,19 @@ class FoldingTransformation:
             ),
             input_core_dims=[
                 ['c', 'l', 'm'],
-                ['clm'],
-                ['clm'],
-                ['clm'],
-                ['clm'],
-                ['clm'],
+                ['clm_truncated'],
+                ['clm_truncated'],
+                ['clm_truncated'],
+                ['clm_truncated'],
+                ['clm_truncated'],
             ],
             output_core_dims=[['clm']],
             dask='parallelized',
             output_dtypes=[self.dtype],
+            dask_gufunc_kwargs=dict(
+                output_sizes=dict(
+                    clm=(self.unfolded_truncation + 1) * (self.unfolded_truncation + 2),
+                )
+            ),
         )
         return ds_data

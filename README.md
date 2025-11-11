@@ -6,6 +6,10 @@
 
 `pyshtransform` is a python toolbox that implements spherical harmonics transformations.
 
+- [Documentation](https://pyshtransform.readthedocs.io)
+- [Source code](https://github.com/aFarchi/pyshtransform)
+- [Issue tracker](https://github.com/aFarchi/pyshtransform/issues)
+
 ## Installation
 
 Install using `pip`:
@@ -15,6 +19,10 @@ Install using `pip`:
 ## Usage
 
 ...
+
+## Acknowledgements
+
+This package contains some functions inspired by [SHTOOLS](https://shtools.github.io/SHTOOLS/).
 
 ## Todo-list
 

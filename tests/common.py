@@ -63,7 +63,7 @@ def open_dataset(filename):
 
 
 def open_decoded(grid):
-    return open_dataset(f'decoded/{grid}.nc')
+    return open_dataset(f'decoded/{grid}.nc').chunk(level=-1)
 
 
 def open_ds_01_legendre(*, truncation, num_lat, num_lon, **_kwargs):
@@ -73,7 +73,7 @@ def open_ds_01_legendre(*, truncation, num_lat, num_lon, **_kwargs):
 def open_ds_05_gradient(*, truncation, num_lat, num_lon, which, **_kwargs):
     return open_dataset(
         f'test_05_gradient/t{truncation}_{num_lat}_{num_lon}_{which}.nc'
-    )
+    ).chunk(level=-1)
 
 
 def open_ds_06_wavelets(*, truncation, spline_order, num_splines, **_kwargs):
