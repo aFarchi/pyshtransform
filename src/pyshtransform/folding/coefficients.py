@@ -24,7 +24,7 @@ class FoldingCoefficients:
         folded_truncation: int,
         dtype: str,
         factor: float,
-    ):
+    ) -> None:
         """Initialises the folding coefficients.
 
         Args:
@@ -56,7 +56,8 @@ class FoldingCoefficients:
                 full_indices_l,
                 full_indices_m,
                 full_factors,
-            )
+                strict=True,
+            ),
         ):
             if i_l <= folded_truncation and i_m <= folded_truncation:
                 indices_clm.append(i_clm)

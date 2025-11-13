@@ -32,7 +32,7 @@ This package contains some functions inspired by [SHTOOLS](https://shtools.githu
 
 Code linting and formatting:
 ```sh
-pixi run ruff check
+pixi run ruff check src/
 pixi run ruff format
 ```
 

@@ -59,7 +59,23 @@ quote-style = "single"
 flake8-quotes.inline-quotes = "single"
 mccabe.max-complexity = 12
 pydocstyle.convention = "google"
-select = ["I"]
+select = ["ALL"]
+ignore = [
+    # trailing commas -- redundant with ruff format
+    "COM812",
+    # no copyright on files
+    "CPY001",
+    # no docstring in __init__.py
+    "D104",
+    # no limit to the number of arguments in function definition
+    "PLR0913",
+    # no limit to the number of local variables
+    "PLR0914",
+    # no limit to the number of positional arguments
+    "PLR0917",
+    # use the constant 2
+    "PLR2004",
+]
 
 [tool.pytest.ini_options]
 console_output_style = "progress"

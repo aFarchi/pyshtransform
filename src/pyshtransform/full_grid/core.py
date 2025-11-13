@@ -16,14 +16,14 @@ def apply_wavelet_decomposition_numpy(
     Returns:
         Folded spectral coefficients decomposed into wavelets.
     """
-    f_clm = np.einsum(
+    f_clm_wavelet: np.ndarray[tuple[int, ...], np.dtype[np.float64]] = np.einsum(
         '...l,wl->...wl',
         f_clm,
         wavelet_matrix,
         casting='no',
         optimize=True,
     )
-    return f_clm
+    return f_clm_wavelet
 
 
 def apply_grad_phi_numpy(
@@ -73,9 +73,14 @@ def generic_folded_spec_to_grid_numpy(
 
     This function covers three cases:
 
-    - to compute the "regular" transformation, provide the Plm coefficients as `plm` and use `grad_phi=False`;
-    - to compute the transformation with gradient with respect to longitude, provide the Plm coefficients as `plm` and use `grad_phi=True`;
-    - to compute the transformation with gradient with respect to latitude, provide the Alm coefficients as `plm` and use `grad_phi=False`.
+    - to compute the "regular" transformation, provide the Plm coefficients
+      as `plm` and use `grad_phi=False`;
+
+    - to compute the transformation with gradient with respect to longitude,
+      provide the Plm coefficients as `plm` and use `grad_phi=True`;
+
+    - to compute the transformation with gradient with respect to latitude,
+      provide the Alm coefficients as `plm` and use `grad_phi=False`.
 
     Args:
         f_clm: Folded spectral coefficients.
@@ -120,6 +125,10 @@ def grid_to_folded_spec_numpy(
     f_clm = np.stack((f_clm.real, f_clm.imag), axis=-3)
     # apply inverse Legendre transformation
     f_grid: np.ndarray[tuple[int, ...], np.dtype[np.float64]] = np.einsum(
-        '...im,iml->...lm', f_clm, pw, casting='no', optimize=True
+        '...im,iml->...lm',
+        f_clm,
+        pw,
+        casting='no',
+        optimize=True,
     )
     return f_grid

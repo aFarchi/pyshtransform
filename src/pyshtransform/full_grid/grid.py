@@ -22,7 +22,15 @@ class FullGrid:
         truncation: int,
         num_lat: int,
         num_lon: int,
-    ):
+    ) -> None:
+        """Initialises the grid.
+
+        Args:
+            dtype: Floating-point data type.
+            truncation: Truncation.
+            num_lat: Number of latitude nodes.
+            num_lon: Number of longitude nodes.
+        """
         cos_t, w = gauss_legendre_nodes(num_lat)
         self.lat = np.asin(cos_t) * 180 / np.pi
         self.lon = np.linspace(0, 360, num_lon, endpoint=False)

@@ -6,7 +6,10 @@ from scipy.interpolate import BSpline
 
 
 def compute_wavelet_matrix(
-    dtype: str, truncation: int, spline_order: int | None, num_splines: int | None
+    dtype: str,
+    truncation: int,
+    spline_order: int | None,
+    num_splines: int | None,
 ) -> xr.DataArray:
     """Computes a wavelet matrix.
 
@@ -18,6 +21,9 @@ def compute_wavelet_matrix(
 
     Returns:
         Data array containing the wavelet matrix.
+
+    Raises:
+        ValueError: If wavelet coefficients do not sum up to 1.
     """
     if spline_order is None or num_splines is None or num_splines < 2:
         return xr.DataArray()
@@ -49,7 +55,8 @@ def compute_wavelet_matrix(
 
     # check that the sum is correct
     if not np.allclose(wavelet_matrix.sum(axis=0), 2 * np.ones(truncation + 1)):
-        raise ValueError('wavelet coefficients do not sum up to one')
+        message = 'wavelet coefficients do not sum up to one'
+        raise ValueError(message)
 
     return xr.DataArray(
         wavelet_matrix,

@@ -5,7 +5,8 @@ import xarray as xr
 
 
 def legendre(
-    n: int, z: np.ndarray[tuple[int], np.dtype[np.float64]]
+    n: int,
+    z: np.ndarray[tuple[int], np.dtype[np.float64]],
 ) -> tuple[
     np.ndarray[tuple[int], np.dtype[np.float64]],
     np.ndarray[tuple[int], np.dtype[np.float64]],
@@ -37,7 +38,9 @@ def legendre(
 
 
 def gauss_legendre_nodes(
-    num_lat: int, max_iter: int = 1000, atol: float = 1e-15
+    num_lat: int,
+    max_iter: int = 1000,
+    atol: float = 1e-15,
 ) -> tuple[
     np.ndarray[tuple[int], np.dtype[np.float64]],
     np.ndarray[tuple[int], np.dtype[np.float64]],
@@ -100,7 +103,8 @@ def gauss_legendre_weights(da_dim: xr.DataArray) -> xr.DataArray:
 
 
 def plmbar_d1(
-    lmax: int, z: np.ndarray[tuple[int], np.dtype[np.float64]]
+    lmax: int,
+    z: np.ndarray[tuple[int], np.dtype[np.float64]],
 ) -> tuple[
     np.ndarray[tuple[int, int, int], np.dtype[np.float64]],
     np.ndarray[tuple[int, int, int], np.dtype[np.float64]],
@@ -144,41 +148,43 @@ def plmbar_d1(
     pm1 = sqr[2] * z
     p[..., 0, 1] = pm1
     dp1[..., 0, 1] = sqr[2]
-    for l in range(2, lmax + 1):
-        plm = f1[l, 0] * z * pm1 - f2[l, 0] * pm2
-        p[..., 0, l] = plm
-        dp1[..., 0, l] = l * (sqr[2 * l] / sqr[2 * l - 2] * pm1 - z * plm) / u**2
+    for i_l in range(2, lmax + 1):
+        plm = f1[i_l, 0] * z * pm1 - f2[i_l, 0] * pm2
+        p[..., 0, i_l] = plm
+        dp1[..., 0, i_l] = (
+            i_l * (sqr[2 * i_l] / sqr[2 * i_l - 2] * pm1 - z * plm) / u**2
+        )
         pm2 = pm1
         pm1 = plm
 
     pmm = scalef
     rescalem = np.ones(len(z)) / scalef
-    for m in range(1, lmax):
-        rescalem = rescalem * u
-        pmm = pmm * sqr[2 * m] / sqr[2 * m - 1]
-        p[..., m, m] = pmm * rescalem
-        dp1[..., m, m] = -m * z * p[..., m, m] / u**2
+    for i_m in range(1, lmax):
+        rescalem *= u
+        pmm = pmm * sqr[2 * i_m] / sqr[2 * i_m - 1]
+        p[..., i_m, i_m] = pmm * rescalem
+        dp1[..., i_m, i_m] = -i_m * z * p[..., i_m, i_m] / u**2
         pm2 = pmm
-        pm1 = z * sqr[2 * m + 2] * pmm
-        p[..., m, m + 1] = pm1 * rescalem
-        dp1[..., m, m + 1] = (
-            sqr[2 * m + 2] * p[..., m, m] - z * (m + 1) * p[..., m, m + 1]
+        pm1 = z * sqr[2 * i_m + 2] * pmm
+        p[..., i_m, i_m + 1] = pm1 * rescalem
+        dp1[..., i_m, i_m + 1] = (
+            sqr[2 * i_m + 2] * p[..., i_m, i_m] - z * (i_m + 1) * p[..., i_m, i_m + 1]
         ) / u**2
-        for l in range(m + 2, lmax + 1):
-            plm = z * f1[l, m] * pm1 - f2[l, m] * pm2
-            p[..., m, l] = plm * rescalem
-            dp1[..., m, l] = (
-                sqr[2 * l]
-                * sqr[l - m - 1]
-                * sqr[l + m - 1]
-                / sqr[2 * l - 2]
-                * p[..., m, l - 1]
-                - z * l * p[..., m, l]
+        for i_l in range(i_m + 2, lmax + 1):
+            plm = z * f1[i_l, i_m] * pm1 - f2[i_l, i_m] * pm2
+            p[..., i_m, i_l] = plm * rescalem
+            dp1[..., i_m, i_l] = (
+                sqr[2 * i_l]
+                * sqr[i_l - i_m - 1]
+                * sqr[i_l + i_m - 1]
+                / sqr[2 * i_l - 2]
+                * p[..., i_m, i_l - 1]
+                - z * i_l * p[..., i_m, i_l]
             ) / u**2
             pm2 = pm1
             pm1 = plm
 
-    rescalem = rescalem * u
+    rescalem *= u
     pmm = pmm * sqr[2 * lmax] / sqr[2 * lmax - 1]
     p[..., lmax, lmax] = pmm * rescalem
     dp1[..., lmax, lmax] = -lmax * z * p[..., lmax, lmax] / u**2

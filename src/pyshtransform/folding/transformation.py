@@ -30,7 +30,7 @@ class FoldingTransformation:
         folded_truncation: int,
         factor: float,
         variant: str | None,
-    ):
+    ) -> None:
         """Initialises the folding transformation.
 
         Args:
@@ -38,6 +38,7 @@ class FoldingTransformation:
             unfolded_truncation: Truncation in unfolded spectral space.
             folded_truncation: Truncation in folded spectral space.
             factor: Correction factor.
+            variant: Transformation to apply in the `apply` method.
         """
         self.dtype = dtype
         self.unfolded_truncation = unfolded_truncation
@@ -59,11 +60,15 @@ class FoldingTransformation:
 
         Returns:
             Output dataset.
+
+        Raises:
+            ValueError: If the variant is unspecified.
         """
         if self.variant is None:
-            raise ValueError('please specify a variant')
-        ds_data = getattr(self, self.variant)(ds_data)
-        return ds_data
+            message = 'please specify a variant'
+            raise ValueError(message)
+        ds_data_out: xr.Dataset = getattr(self, self.variant)(ds_data)
+        return ds_data_out
 
     def enforce_dtype(self, ds_data: xr.Dataset) -> xr.Dataset:
         """Enforces data type.
@@ -74,7 +79,7 @@ class FoldingTransformation:
         Returns:
             Dataset with the appropriate floating-point data type.
         """
-        logger.info(f'enforcing dtype "{self.dtype}" before transformation')
+        logger.info('enforcing dtype "%s" before transformation', self.dtype)
         return ds_data.astype(self.dtype)
 
     def fold_clm(self, ds_data: xr.Dataset) -> xr.Dataset:
@@ -85,16 +90,22 @@ class FoldingTransformation:
 
         Returns:
             Dataset containing folded spectral coefficients.
+
+        Raises:
+            ValueError: If the input dataset has incorrect truncation.
         """
         logger.info('applying "fold_clm" transformation')
         num_clm = len(ds_data.clm)
         unfolded_truncation = int((math.sqrt(4 * num_clm + 1) - 1) / 2) - 1
         if unfolded_truncation != self.unfolded_truncation:
-            raise ValueError(
-                f'unfolded truncation is incorrect, expected {self.unfolded_truncation}, got {unfolded_truncation}'
+            message = (
+                f'unfolded truncation is incorrect,'
+                f' expected {self.unfolded_truncation},'
+                f' got {unfolded_truncation}'
             )
+            raise ValueError(message)
         ds_data = self.enforce_dtype(ds_data)
-        ds_data = xr.apply_ufunc(
+        ds_data_out: xr.Dataset = xr.apply_ufunc(
             fold_clm_numpy,
             ds_data,
             self.folding_coefficients.c,
@@ -102,10 +113,10 @@ class FoldingTransformation:
             self.folding_coefficients.m,
             self.folding_coefficients.f,
             self.folding_coefficients.clm,
-            kwargs=dict(
-                folded_truncation=self.folded_truncation,
-                dtype=self.dtype,
-            ),
+            kwargs={
+                'folded_truncation': self.folded_truncation,
+                'dtype': self.dtype,
+            },
             input_core_dims=[
                 ['clm'],
                 ['clm_truncated'],
@@ -117,15 +128,15 @@ class FoldingTransformation:
             output_core_dims=[['c', 'l', 'm']],
             dask='parallelized',
             output_dtypes=[self.dtype],
-            dask_gufunc_kwargs=dict(
-                output_sizes=dict(
-                    c=2,
-                    l=self.folded_truncation + 1,
-                    m=self.folded_truncation + 1,
-                )
-            ),
+            dask_gufunc_kwargs={
+                'output_sizes': {
+                    'c': 2,
+                    'l': self.folded_truncation + 1,
+                    'm': self.folded_truncation + 1,
+                },
+            },
         )
-        return ds_data
+        return ds_data_out
 
     def unfold_clm(self, ds_data: xr.Dataset) -> xr.Dataset:
         """Transforms the dataset from folded to unfolded spectral space.
@@ -135,6 +146,9 @@ class FoldingTransformation:
 
         Returns:
             Dataset containing unfolded spectral coefficients.
+
+        Raises:
+            ValueError: If the input dataset has incorrect truncation.
         """
         logger.info('applying "unfold_clm" transformation')
         ds_data = self.enforce_dtype(ds_data)
@@ -143,10 +157,14 @@ class FoldingTransformation:
             or len(ds_data.l) != self.folded_truncation + 1
             or len(ds_data.m) != self.folded_truncation + 1
         ):
-            raise ValueError(
-                f'folded shape is incorrect, expected 2*{self.folded_truncation + 1}*{self.folded_truncation + 1}, got {len(ds_data.c)}*{len(ds_data.l)}*{len(ds_data.m)}'
+            message = (
+                f'folded shape is incorrect,'
+                f' expected 2*{self.folded_truncation + 1}'
+                f'*{self.folded_truncation + 1},'
+                f' got {len(ds_data.c)}*{len(ds_data.l)}*{len(ds_data.m)}'
             )
-        ds_data = xr.apply_ufunc(
+            raise ValueError(message)
+        ds_data_out: xr.Dataset = xr.apply_ufunc(
             unfold_clm_numpy,
             ds_data,
             self.folding_coefficients.c,
@@ -154,10 +172,10 @@ class FoldingTransformation:
             self.folding_coefficients.m,
             self.folding_coefficients.f,
             self.folding_coefficients.clm,
-            kwargs=dict(
-                unfolded_truncation=self.unfolded_truncation,
-                dtype=self.dtype,
-            ),
+            kwargs={
+                'unfolded_truncation': self.unfolded_truncation,
+                'dtype': self.dtype,
+            },
             input_core_dims=[
                 ['c', 'l', 'm'],
                 ['clm_truncated'],
@@ -169,10 +187,11 @@ class FoldingTransformation:
             output_core_dims=[['clm']],
             dask='parallelized',
             output_dtypes=[self.dtype],
-            dask_gufunc_kwargs=dict(
-                output_sizes=dict(
-                    clm=(self.unfolded_truncation + 1) * (self.unfolded_truncation + 2),
-                )
-            ),
+            dask_gufunc_kwargs={
+                'output_sizes': {
+                    'clm': (self.unfolded_truncation + 1)
+                    * (self.unfolded_truncation + 2),
+                },
+            },
         )
-        return ds_data
+        return ds_data_out
