@@ -42,6 +42,7 @@ dev = [
 ]
 
 [project.urls]
+Documentation = "https://pyshtransform.readthedocs.io"
 Issues = "https://github.com/aFarchi/pyshtransform/issues"
 Source = "https://github.com/aFarchi/pyshtransform"
 
@@ -49,6 +50,9 @@ Source = "https://github.com/aFarchi/pyshtransform"
 strict = true
 
 [tool.ruff]
+exclude = [
+    "docs",
+]
 preview = true
 
 [tool.ruff.format]
@@ -57,24 +61,31 @@ quote-style = "single"
 
 [tool.ruff.lint]
 flake8-quotes.inline-quotes = "single"
-mccabe.max-complexity = 12
 pydocstyle.convention = "google"
+pylint.max-args = 10
+pylint.max-locals = 20
+pylint.allow-magic-value-types = ["int"]
 select = ["ALL"]
 ignore = [
-    # trailing commas -- redundant with ruff format
-    "COM812",
     # no copyright on files
     "CPY001",
-    # no docstring in __init__.py
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = [
+    # no docstring
     "D104",
-    # no limit to the number of arguments in function definition
-    "PLR0913",
-    # no limit to the number of local variables
-    "PLR0914",
-    # no limit to the number of positional arguments
-    "PLR0917",
-    # use the constant 2
-    "PLR2004",
+]
+"tests/*" = [
+    # no annotations
+    "ANN",
+    # no docstrings
+    "D",
+    # no __init__.py
+    "INP001",
+    # use print
+    "T201",
+
 ]
 
 [tool.pytest.ini_options]

@@ -6,37 +6,37 @@ from pyshtransform.full_grid.transformation import FullGridSphericalHarmonicsTra
 
 @pytest.fixture(
     params=[
-        dict(
-            unfolded_truncation=1279,
-            folded_truncation=63,
-            num_lat=64,
-            num_lon=128,
-        ),
-        dict(
-            unfolded_truncation=1279,
-            folded_truncation=191,
-            num_lat=192,
-            num_lon=384,
-        ),
-        dict(
-            unfolded_truncation=1279,
-            folded_truncation=15,
-            num_lat=16,
-            num_lon=31,
-        ),
-        dict(
-            unfolded_truncation=1279,
-            folded_truncation=15,
-            num_lat=16,
-            num_lon=63,
-        ),
-        dict(
-            unfolded_truncation=1279,
-            folded_truncation=15,
-            num_lat=32,
-            num_lon=31,
-        ),
-    ]
+        {
+            'unfolded_truncation': 1279,
+            'folded_truncation': 63,
+            'num_lat': 64,
+            'num_lon': 128,
+        },
+        {
+            'unfolded_truncation': 1279,
+            'folded_truncation': 191,
+            'num_lat': 192,
+            'num_lon': 384,
+        },
+        {
+            'unfolded_truncation': 1279,
+            'folded_truncation': 15,
+            'num_lat': 16,
+            'num_lon': 31,
+        },
+        {
+            'unfolded_truncation': 1279,
+            'folded_truncation': 15,
+            'num_lat': 16,
+            'num_lon': 63,
+        },
+        {
+            'unfolded_truncation': 1279,
+            'folded_truncation': 15,
+            'num_lat': 32,
+            'num_lon': 31,
+        },
+    ],
 )
 def config_success(request):
     return request.param
@@ -44,13 +44,13 @@ def config_success(request):
 
 @pytest.fixture(
     params=[
-        dict(
-            unfolded_truncation=1279,
-            folded_truncation=15,
-            num_lat=14,
-            num_lon=31,
-        ),
-    ]
+        {
+            'unfolded_truncation': 1279,
+            'folded_truncation': 15,
+            'num_lat': 14,
+            'num_lon': 31,
+        },
+    ],
 )
 def config_fail(request):
     return request.param

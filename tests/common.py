@@ -32,7 +32,8 @@ class RichDaskProgressBar(dask.callbacks.Callback):
         self.progress = progress_bar('dask progress')
         self.progress.start()
         self.task = self.progress.add_task(
-            description='the task description', total=None
+            description='the task description',
+            total=None,
         )
 
     def _pretask(self, _key, _dsk, state):
@@ -58,7 +59,7 @@ def get_test_data_path():
 
 def open_dataset(filename):
     filename = get_test_data_path() / filename
-    logger.info(f'reading "{filename}"')
+    logger.info('reading "%s"', filename)
     return xr.open_dataset(filename, engine='h5netcdf')
 
 
@@ -72,13 +73,13 @@ def open_ds_01_legendre(*, truncation, num_lat, num_lon, **_kwargs):
 
 def open_ds_05_gradient(*, truncation, num_lat, num_lon, which, **_kwargs):
     return open_dataset(
-        f'test_05_gradient/t{truncation}_{num_lat}_{num_lon}_{which}.nc'
+        f'test_05_gradient/t{truncation}_{num_lat}_{num_lon}_{which}.nc',
     ).chunk(level=-1)
 
 
 def open_ds_06_wavelets(*, truncation, spline_order, num_splines, **_kwargs):
     return open_dataset(
-        f'test_06_wavelets/t{truncation}_{spline_order}_{num_splines}.nc'
+        f'test_06_wavelets/t{truncation}_{spline_order}_{num_splines}.nc',
     )
 
 
@@ -87,7 +88,7 @@ def compute_differences(ds_1, ds_2):
         return np.sqrt(np.square(ds).mean())
 
     variables = [v for v in ds_1 if v in ds_2]
-    differences = dict()
+    differences = {}
     for v in variables:
         a_diff = abs(ds_1[v] - ds_2[v])
         mean_a = (abs(ds_1[v]) + abs(ds_2[v])) / 2
@@ -104,12 +105,12 @@ def compute_differences(ds_1, ds_2):
             rms_diff / mean_rms,
             0,
         )
-        differences[v] = dict(
-            a_max_diff_abs=a_max_diff_abs,
-            a_max_diff_rel=a_max_diff_rel,
-            rms_diff_abs=rms_diff,
-            rms_diff_rel=rms_diff_rel,
-        )
+        differences[v] = {
+            'a_max_diff_abs': a_max_diff_abs,
+            'a_max_diff_rel': a_max_diff_rel,
+            'rms_diff_abs': rms_diff,
+            'rms_diff_rel': rms_diff_rel,
+        }
     return dask.compute(differences)[0]
 
 
@@ -118,8 +119,7 @@ def print_differences(title, errors, rtol, atol):
         the_string = f'{err:.5e}'
         if err < tol or err == 0:
             return the_string
-        else:
-            return '[red]' + the_string + '[/]'
+        return '[red]' + the_string + '[/]'
 
     table = rich.table.Table(title=f'[bold magenta]{title}[/]')
     table.add_column(

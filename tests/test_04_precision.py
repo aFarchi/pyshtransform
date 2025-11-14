@@ -6,13 +6,13 @@ from pyshtransform.full_grid.transformation import FullGridSphericalHarmonicsTra
 
 @pytest.fixture(
     params=[
-        dict(
-            unfolded_truncation=1279,
-            folded_truncation=7,
-            num_lat=8,
-            num_lon=16,
-        ),
-    ]
+        {
+            'unfolded_truncation': 1279,
+            'folded_truncation': 7,
+            'num_lat': 8,
+            'num_lon': 16,
+        },
+    ],
 )
 def config_success(request):
     return request.param
