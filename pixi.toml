@@ -6,6 +6,13 @@ platforms = ["osx-arm64"]
 pyshtransform = { path = ".", editable = true }
 
 [tasks]
+lint = "ruff check"
+format = "ruff format --config \"lint.ignore = ['COM812']\""
+static-an = "mypy src/"
+tests = "pytest -vs"
+gen-api-doc = "sphinx-apidoc -f -o docs/source/api/ src/"
+clean-doc = "sphinx-build -M clean docs/source/ docs/build/"
+gen-doc = "sphinx-build -M html docs/source/ docs/build/"
 
 [dependencies]
 dask = ">=2025.10.0,<2026"
