@@ -1,6 +1,7 @@
 # pyshtransform
 
 [![PyPI version](https://badge.fury.io/py/pyshtransform.svg)](https://badge.fury.io/py/pyshtransform)
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/pyshtransform.svg)](https://anaconda.org/conda-forge/pyshtransform)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Documentation status](https://app.readthedocs.org/projects/pyshtransform/badge/?version=latest)](https://app.readthedocs.org/projects/pyshtransform/badge/?version=latest)
 
