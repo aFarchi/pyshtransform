@@ -34,7 +34,6 @@ dev = [
     "dask",
     "h5netcdf",
     "ipykernel",
-    "mypy",
     "pytest",
     "rich",
     "ruff",
@@ -45,9 +44,6 @@ dev = [
 Issues = "https://github.com/aFarchi/pyshtransform/issues"
 Source = "https://github.com/aFarchi/pyshtransform"
 
-[tool.mypy]
-strict = true
-
 [tool.ruff]
 preview = true
 
@@ -57,9 +53,51 @@ quote-style = "single"
 
 [tool.ruff.lint]
 flake8-quotes.inline-quotes = "single"
-mccabe.max-complexity = 12
 pydocstyle.convention = "google"
-select = ["I"]
+pylint.allow-magic-value-types = ["int", "str"]
+pylint.max-args = 15
+pylint.max-locals = 20
+pylint.max-statements = 75
+select = ["ALL"]
+ignore = [
+    # no anotations
+    "ANN",
+    # no copyright on files
+    "missing-copyright-notice",
+    # no docstrings
+    "D",
+]
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["osx-arm64"]
+
+[tool.pixi.pypi-dependencies]
+pyshtransform = { path = ".", editable = true }
+
+[tool.pixi.tasks]
+lint = "ruff check"
+format = "ruff format --config \"lint.ignore = ['COM812']\""
+jl = "jupyter lab --no-browser"
+test = "pytest -vs tests/"
+gen-doc-api = "sphinx-apidoc -f -o docs/source/api/ src/"
+clean-doc = "sphinx-build -M clean docs/source/ docs/build/"
+gen-doc = "sphinx-build -M html docs/source/ docs/build/"
+
+[tool.pixi.dependencies]
+dask = ">=2025.10.0,<2026"
+h5netcdf = ">=1.7.3,<2"
+m2r2 = ">=0.3.4,<0.4"
+numpy = ">=2.3.3,<3"
+pytest = ">=8.4.2,<9"
+rich = ">=14.2.0,<15"
+ruff = ">=0.14.1,<0.15"
+scipy = ">=1.16.2,<2"
+scipy-stubs = ">=1.16.2.4,<2"
+sphinx = ">=8.2.3,<9"
+sphinx-rtd-theme = ">=3.0.2,<4"
+xarray = ">=2025.10.1,<2026"
+jupyterlab = ">=4.6.4,<5"
 
 [tool.pytest.ini_options]
 console_output_style = "progress"
