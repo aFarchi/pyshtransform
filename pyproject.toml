@@ -107,5 +107,4 @@ testpaths = [
 norecursedirs = ["data"]
 filterwarnings = [
     "error",
-    "ignore:invalid value encountered in divide:RuntimeWarning:dask._task_spec:759",
 ]

@@ -94,14 +94,14 @@ def compute_differences(ds_1, ds_2):
         a_max_diff_abs = a_diff.max()
         a_max_diff_rel = xr.where(
             mean_a > 0,
-            a_diff / mean_a,
+            a_diff / mean_a.where(mean_a > 0, other=1),
             0,
         ).max()
         rms_diff = rms(ds_1[v] - ds_2[v])
         mean_rms = rms(ds_1[v]) + rms(ds_2[v])
         rms_diff_rel = xr.where(
             mean_rms > 0,
-            rms_diff / mean_rms,
+            rms_diff / mean_rms.where(mean_rms > 0, other=1),
             0,
         )
         differences[v] = {
