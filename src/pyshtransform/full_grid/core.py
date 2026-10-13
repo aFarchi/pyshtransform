@@ -125,3 +125,72 @@ def grid_to_folded_spec_numpy(
         '...im,iml->...lm', f_clm, pw, casting='no', optimize=True,
     )
     return f_grid
+
+
+def grid_uv_to_folded_spec_vod_numpy(
+    f_u,
+    f_v,
+    pw,
+    alm,
+    gauss_weights,
+    cos_lat,
+    *,
+    radius=6_371_229.0,
+):
+    zonal_weights = pw / (radius * cos_lat[:, None, None])
+    latitude_weights = 0.5 * gauss_weights[:, None, None] * alm / radius
+    num_orders = pw.shape[-2]
+    longitude_factor = -1j * np.arange(num_orders)
+
+    u_fourier = np.fft.ihfft(f_u, axis=-1, norm='backward')[..., :num_orders]
+    v_fourier = np.fft.ihfft(f_v, axis=-1, norm='backward')[..., :num_orders]
+
+    def analyse(field, weights):
+        return np.einsum('...im,iml->...lm', field, weights, optimize=True)
+
+    vo = longitude_factor * analyse(v_fourier, zonal_weights)
+    vo += analyse(u_fourier, latitude_weights)
+    div = longitude_factor * analyse(u_fourier, zonal_weights)
+    div -= analyse(v_fourier, latitude_weights)
+
+    return (
+        np.stack((vo.real, vo.imag), axis=-3),
+        np.stack((div.real, div.imag), axis=-3),
+    )
+
+
+def folded_spec_vod_to_grid_uv_numpy(
+    vo_clm,
+    d_clm,
+    plm,
+    alm,
+    cos_lat,
+    *,
+    num_lon,
+    radius=6_371_229.0,
+):
+    degree = np.arange(plm.shape[-1])
+    order = np.arange(plm.shape[-2])
+    valid = degree[:, None] >= order[None, :]
+    inverse_laplacian = np.zeros(degree.size, dtype=np.float64)
+    inverse_laplacian[1:] = -radius**2 / (degree[1:] * (degree[1:] + 1))
+
+    vo = vo_clm[..., 0, :, :] + 1j * vo_clm[..., 1, :, :]
+    div = d_clm[..., 0, :, :] + 1j * d_clm[..., 1, :, :]
+    psi = np.where(valid, vo, 0.0) * inverse_laplacian[:, None]
+    chi = np.where(valid, div, 0.0) * inverse_laplacian[:, None]
+
+    def synthesize(coefficients, basis):
+        return np.einsum("...jm,imj->...im", coefficients, basis, optimize=True)
+
+    longitude_factor = -1j * order
+    zonal_scale = 1.0 / (radius * cos_lat[:, None])
+    u_fourier = zonal_scale * synthesize(longitude_factor * chi, plm)
+    u_fourier -= synthesize(psi, alm) / radius
+    v_fourier = synthesize(chi, alm) / radius
+    v_fourier += zonal_scale * synthesize(longitude_factor * psi, plm)
+
+    return (
+        np.fft.hfft(u_fourier, n=num_lon, axis=-1, norm="backward"),
+        np.fft.hfft(v_fourier, n=num_lon, axis=-1, norm="backward"),
+    )

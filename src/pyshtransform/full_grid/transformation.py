@@ -9,6 +9,8 @@ from pyshtransform.full_grid.core import (
     apply_wavelet_decomposition_numpy,
     generic_folded_spec_to_grid_numpy,
     grid_to_folded_spec_numpy,
+    grid_uv_to_folded_spec_vod_numpy,
+    folded_spec_vod_to_grid_uv_numpy,
 )
 from pyshtransform.full_grid.grid import FullGrid
 from pyshtransform.wavelet import compute_wavelet_matrix
@@ -414,3 +416,71 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
         """
         ds_data = self.fold_clm(ds_data)
         return self.folded_spec_to_grid_full(ds_data, prefix_theta, prefix_phi)
+
+    def grid_uv_to_folded_spec_vod(self, ds_data):
+        ds_data = self.enforce_dtype(ds_data)
+        ds_data_vo, ds_data_d = xr.apply_ufunc(
+            grid_uv_to_folded_spec_vod_numpy,
+            ds_data.u,
+            ds_data.v,
+            self.grid.pw,
+            self.grid.alm,
+            self.grid.gauss_weights,
+            self.grid.cos_lat,
+            kwargs=dict(
+                radius=6_371_229.0,
+            ),
+            input_core_dims=[
+                ['latitude', 'longitude'],
+                ['latitude', 'longitude'],
+                ['latitude', 'l', 'm'],
+                ['latitude', 'l', 'm'],
+                ['latitude'],
+                ['latitude'],
+            ],
+            output_core_dims=[['c', 'l', 'm'], ['c', 'l', 'm']],
+            dask='parallelized',
+            output_dtypes=[self.dtype, self.dtype],
+            dask_gufunc_kwargs=dict(
+                output_sizes=dict(
+                    c=2,
+                )
+            ),
+        )
+        return xr.merge((ds_data_vo.rename('vo'), ds_data_d.rename('d')))
+
+    def folded_spec_vod_to_grid_uv(self, ds_data):
+        ds_data = self.enforce_dtype(ds_data)
+        ds_data_u, ds_data_v = xr.apply_ufunc(
+            folded_spec_vod_to_grid_uv_numpy,
+            ds_data.vo,
+            ds_data.d,
+            self.grid.plm,
+            self.grid.alm,
+            self.grid.cos_lat,
+            kwargs=dict(
+                num_lon=self.num_lon,
+                radius=6_371_229.0,
+            ),
+            input_core_dims=[
+                ['c', 'l', 'm'],
+                ['c', 'l', 'm'],
+                ['latitude', 'l', 'm'],
+                ['latitude', 'l', 'm'],
+                ['latitude'],
+            ],
+            output_core_dims=[['latitude', 'longitude'], ['latitude', 'longitude']],
+            dask='parallelized',
+            output_dtypes=[self.dtype, self.dtype],
+            dask_gufunc_kwargs=dict(
+                output_sizes=dict(
+                    longitude=self.num_lon,
+                )
+            ),
+        )
+        ds_data = xr.merge((ds_data_u.rename('u'), ds_data_v.rename('v'))).assign_coords(
+            latitude=self.grid.lat,
+            longitude=self.grid.lon,
+        )
+        return ds_data
+    
