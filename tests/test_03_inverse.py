@@ -7,31 +7,26 @@ from pyshtransform.full_grid.transformation import FullGridSphericalHarmonicsTra
 @pytest.fixture(
     params=[
         {
-            'unfolded_truncation': 1279,
             'folded_truncation': 63,
             'num_lat': 64,
             'num_lon': 128,
         },
         {
-            'unfolded_truncation': 1279,
             'folded_truncation': 191,
             'num_lat': 192,
             'num_lon': 384,
         },
         {
-            'unfolded_truncation': 1279,
             'folded_truncation': 15,
             'num_lat': 16,
             'num_lon': 31,
         },
         {
-            'unfolded_truncation': 1279,
             'folded_truncation': 15,
             'num_lat': 16,
             'num_lon': 63,
         },
         {
-            'unfolded_truncation': 1279,
             'folded_truncation': 15,
             'num_lat': 32,
             'num_lon': 31,
@@ -45,7 +40,6 @@ def config_success(request):
 @pytest.fixture(
     params=[
         {
-            'unfolded_truncation': 1279,
             'folded_truncation': 15,
             'num_lat': 14,
             'num_lon': 31,
@@ -56,9 +50,9 @@ def config_fail(request):
     return request.param
 
 
-def construct_transformation(config):
+def construct_transformation(config, ds_spec):
     return FullGridSphericalHarmonicsTransform(
-        **config,
+        **(config | {'unfolded_truncation': ds_spec.truncation}),
         spline_order=None,
         num_splines=None,
         dtype='float64',
@@ -67,7 +61,7 @@ def construct_transformation(config):
 
 
 def test_inverse_left(ds_spec, config_success):
-    transformation = construct_transformation(config_success)
+    transformation = construct_transformation(config_success, ds_spec)
     ds_folded = transformation.fold_clm(ds_spec)
     ds_grid = transformation.unfolded_spec_to_grid(ds_spec)
     ds_folded_inverse = transformation.grid_to_folded_spec(ds_grid)
@@ -78,10 +72,23 @@ def test_inverse_left(ds_spec, config_success):
         rtol=1e-6,
         atol=0,
     )
+    #for name, atol in {
+    #    't': 2e-11,
+    #    'vo': 1e-18,
+    #    'd': 1e-18,
+    #    'u': 1e-12,
+    #    'v': 1e-12,
+    #}.items():
+    #    common.assert_spectral_error(
+    #        ds_folded_inverse[[name]],
+    #        ds_folded[[name]],
+    #        atol=atol,
+    #        bulk_rtol=1e-10,
+   #     )
 
 
 def test_fail_inverse_left(ds_spec, config_fail):
-    transformation = construct_transformation(config_fail)
+    transformation = construct_transformation(config_fail, ds_spec)
     ds_folded = transformation.fold_clm(ds_spec)
     ds_grid = transformation.unfolded_spec_to_grid(ds_spec)
     ds_folded_inverse = transformation.grid_to_folded_spec(ds_grid)
@@ -96,7 +103,7 @@ def test_fail_inverse_left(ds_spec, config_fail):
 
 
 def test_inverse_right(ds_spec, config_success):
-    transformation = construct_transformation(config_success)
+    transformation = construct_transformation(config_success, ds_spec)
     ds_grid = transformation.unfolded_spec_to_grid(ds_spec)
     ds_folded_inverse = transformation.grid_to_folded_spec(ds_grid)
     ds_grid_inverse = transformation.folded_spec_to_grid(ds_folded_inverse)
@@ -110,7 +117,7 @@ def test_inverse_right(ds_spec, config_success):
 
 
 def test_fail_inverse_right(ds_spec, config_fail):
-    transformation = construct_transformation(config_fail)
+    transformation = construct_transformation(config_fail, ds_spec)
     ds_grid = transformation.unfolded_spec_to_grid(ds_spec)
     ds_folded_inverse = transformation.grid_to_folded_spec(ds_grid)
     ds_grid_inverse = transformation.folded_spec_to_grid(ds_folded_inverse)

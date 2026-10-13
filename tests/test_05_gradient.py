@@ -42,10 +42,10 @@ def ds_05_gradient_dt_dphi(config):
     return common.open_ds_05_gradient(which='dt_dphi', **config)
 
 
-def construct_transformation(ds_05_gradient_t):
+def construct_transformation(ds_05_gradient_t, ds_spec):
     return FullGridSphericalHarmonicsTransform(
         dtype='float64',
-        unfolded_truncation=1279,
+        unfolded_truncation=ds_spec.truncation,
         folded_truncation=ds_05_gradient_t.truncation,
         num_lat=len(ds_05_gradient_t.latitude),
         num_lon=len(ds_05_gradient_t.longitude),
@@ -56,7 +56,7 @@ def construct_transformation(ds_05_gradient_t):
 
 
 def test_forward(ds_spec, ds_05_gradient_t):
-    transformation = construct_transformation(ds_05_gradient_t)
+    transformation = construct_transformation(ds_05_gradient_t, ds_spec)
     ds_grid = transformation.unfolded_spec_to_grid(ds_spec)
     common.test_function(
         'spec_to_grid',
@@ -64,11 +64,12 @@ def test_forward(ds_spec, ds_05_gradient_t):
         ds_05_gradient_t,
         rtol=1e-7,
         atol=0,
+        transform=transformation,
     )
 
 
 def test_grad_theta(ds_spec, ds_05_gradient_dt_dtheta):
-    transformation = construct_transformation(ds_05_gradient_dt_dtheta)
+    transformation = construct_transformation(ds_05_gradient_dt_dtheta, ds_spec)
     ds_grid = transformation.unfolded_spec_to_grid_grad_theta(ds_spec, prefix='')
     common.test_function(
         'spec_to_grid_grad_theta',
@@ -76,11 +77,12 @@ def test_grad_theta(ds_spec, ds_05_gradient_dt_dtheta):
         ds_05_gradient_dt_dtheta,
         rtol=1e-7,
         atol=0,
+        transform=transformation,
     )
 
 
 def test_grad_phi(ds_spec, ds_05_gradient_dt_dphi):
-    transformation = construct_transformation(ds_05_gradient_dt_dphi)
+    transformation = construct_transformation(ds_05_gradient_dt_dphi, ds_spec)
     ds_grid = transformation.unfolded_spec_to_grid_grad_phi(ds_spec, prefix='')
     common.test_function(
         'spec_to_grid_grad_phi',
@@ -88,13 +90,17 @@ def test_grad_phi(ds_spec, ds_05_gradient_dt_dphi):
         ds_05_gradient_dt_dphi,
         rtol=1e-7,
         atol=0,
+        transform=transformation,
     )
 
 
 def test_full(
-    ds_spec, ds_05_gradient_t, ds_05_gradient_dt_dtheta, ds_05_gradient_dt_dphi,
+    ds_spec,
+    ds_05_gradient_t,
+    ds_05_gradient_dt_dtheta,
+    ds_05_gradient_dt_dphi,
 ):
-    transformation = construct_transformation(ds_05_gradient_dt_dphi)
+    transformation = construct_transformation(ds_05_gradient_dt_dphi, ds_spec)
     ds_grid = transformation.unfolded_spec_to_grid_full(ds_spec)
     ds_grid_selected = ds_grid.drop_vars(
         var for var in ds_grid if var.startswith(('gt', 'gp'))
@@ -105,6 +111,7 @@ def test_full(
         ds_05_gradient_t,
         rtol=1e-7,
         atol=0,
+        transform=transformation,
     )
     ds_grid_selected = ds_grid.drop_vars(
         var for var in ds_grid if not var.startswith('gt')
@@ -118,6 +125,7 @@ def test_full(
         ds_05_gradient_dt_dtheta,
         rtol=1e-7,
         atol=0,
+        transform=transformation,
     )
     ds_grid_selected = ds_grid.drop_vars(
         var for var in ds_grid if not var.startswith('gp')
@@ -131,4 +139,5 @@ def test_full(
         ds_05_gradient_dt_dphi,
         rtol=1e-7,
         atol=0,
+        transform=transformation,
     )

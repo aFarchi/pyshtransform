@@ -22,10 +22,10 @@ def ds_06_wavelets(config):
     return common.open_ds_06_wavelets(**config)
 
 
-def construct_transformation(ds_06_wavelets):
+def construct_transformation(ds_06_wavelets, ds_spec):
     return FullGridSphericalHarmonicsTransform(
         dtype='float64',
-        unfolded_truncation=1279,
+        unfolded_truncation=ds_spec.truncation,
         folded_truncation=ds_06_wavelets.truncation,
         num_lat=len(ds_06_wavelets.latitude),
         num_lon=len(ds_06_wavelets.longitude),
@@ -36,7 +36,7 @@ def construct_transformation(ds_06_wavelets):
 
 
 def test_forward(ds_spec, ds_06_wavelets):
-    transformation = construct_transformation(ds_06_wavelets)
+    transformation = construct_transformation(ds_06_wavelets, ds_spec)
     ds_spec = ds_spec.load()
     ds_grid = transformation.unfolded_spec_to_grid(ds_spec)
     common.test_function(
@@ -45,4 +45,5 @@ def test_forward(ds_spec, ds_06_wavelets):
         ds_06_wavelets,
         rtol=1e-7,
         atol=0,
+        transform=transformation,
     )
