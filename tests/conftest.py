@@ -1,4 +1,4 @@
-import common
+import common  # ruff: ignore[implicit-namespace-package]
 import pytest
 
 

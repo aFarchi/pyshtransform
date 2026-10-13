@@ -1,6 +1,6 @@
-# -- Path setup --------------------------------------------------------------
+# -- Path setup --------------------------------------------------------------  # ruff: ignore[implicit-namespace-package]
 
-import datetime
+import datetime as dt
 import pathlib
 import sys
 
@@ -10,11 +10,11 @@ sys.path.insert(0, str(pathlib.Path(__file__).parents[2]))
 
 # -- Project information -----------------------------------------------------
 
-with open('../../pyproject.toml', mode='rb') as pyproject:
+with pathlib.Path('../../pyproject.toml').open(mode='rb') as pyproject:
     pkg_meta = tomli.load(pyproject)['project']
 
 project = str(pkg_meta['name'])
-copyright = str(datetime.datetime.now().year) + ', Alban Farchi'
+copyright = str(dt.datetime.now().year) + ', Alban Farchi'  # ruff: ignore[builtin-variable-shadowing, call-datetime-now-without-tzinfo]
 author = 'Alban Farchi'
 version = str(pkg_meta['version'])
 release = version

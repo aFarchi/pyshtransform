@@ -6,7 +6,7 @@ import numpy as np
 def fold_clm_numpy(
     unfolded_f_clm: np.ndarray[tuple[int, ...], np.dtype[np.float64]],
     c: np.ndarray[tuple[int], np.dtype[np.int_]],
-    l: np.ndarray[tuple[int], np.dtype[np.int_]],
+    l: np.ndarray[tuple[int], np.dtype[np.int_]],  # ruff: ignore[ambiguous-variable-name]
     m: np.ndarray[tuple[int], np.dtype[np.int_]],
     f: np.ndarray[tuple[int], np.dtype[np.float64]],
     clm: np.ndarray[tuple[int], np.dtype[np.int_]],
@@ -41,7 +41,7 @@ def fold_clm_numpy(
 def unfold_clm_numpy(
     folded_f_clm: np.ndarray[tuple[int, ...], np.dtype[np.float64]],
     c: np.ndarray[tuple[int], np.dtype[np.int_]],
-    l: np.ndarray[tuple[int], np.dtype[np.int_]],
+    l: np.ndarray[tuple[int], np.dtype[np.int_]],  # ruff: ignore[ambiguous-variable-name]
     m: np.ndarray[tuple[int], np.dtype[np.int_]],
     f: np.ndarray[tuple[int], np.dtype[np.float64]],
     clm: np.ndarray[tuple[int], np.dtype[np.int_]],

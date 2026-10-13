@@ -1,4 +1,4 @@
-import common
+import common  # ruff: ignore[implicit-namespace-package]
 import pytest
 
 from pyshtransform.full_grid.transformation import FullGridSphericalHarmonicsTransform
@@ -6,12 +6,12 @@ from pyshtransform.full_grid.transformation import FullGridSphericalHarmonicsTra
 
 @pytest.fixture(
     params=[
-        dict(
-            truncation=15,
-            spline_order=1,
-            num_splines=3,
-        ),
-    ]
+        {
+            'truncation': 15,
+            'spline_order': 1,
+            'num_splines': 3,
+        },
+    ],
 )
 def config(request):
     return request.param

@@ -5,7 +5,7 @@ import xarray as xr
 
 
 def legendre(
-    n: int, z: np.ndarray[tuple[int], np.dtype[np.float64]]
+    n: int, z: np.ndarray[tuple[int], np.dtype[np.float64]],
 ) -> tuple[
     np.ndarray[tuple[int], np.dtype[np.float64]],
     np.ndarray[tuple[int], np.dtype[np.float64]],
@@ -37,7 +37,7 @@ def legendre(
 
 
 def gauss_legendre_nodes(
-    num_lat: int, max_iter: int = 1000, atol: float = 1e-15
+    num_lat: int, max_iter: int = 1000, atol: float = 1e-15,
 ) -> tuple[
     np.ndarray[tuple[int], np.dtype[np.float64]],
     np.ndarray[tuple[int], np.dtype[np.float64]],
@@ -100,7 +100,7 @@ def gauss_legendre_weights(da_dim: xr.DataArray) -> xr.DataArray:
 
 
 def plmbar_d1(
-    lmax: int, z: np.ndarray[tuple[int], np.dtype[np.float64]]
+    lmax: int, z: np.ndarray[tuple[int], np.dtype[np.float64]],
 ) -> tuple[
     np.ndarray[tuple[int, int, int], np.dtype[np.float64]],
     np.ndarray[tuple[int, int, int], np.dtype[np.float64]],
@@ -144,7 +144,7 @@ def plmbar_d1(
     pm1 = sqr[2] * z
     p[..., 0, 1] = pm1
     dp1[..., 0, 1] = sqr[2]
-    for l in range(2, lmax + 1):
+    for l in range(2, lmax + 1):  # ruff: ignore[ambiguous-variable-name]
         plm = f1[l, 0] * z * pm1 - f2[l, 0] * pm2
         p[..., 0, l] = plm
         dp1[..., 0, l] = l * (sqr[2 * l] / sqr[2 * l - 2] * pm1 - z * plm) / u**2
@@ -154,7 +154,7 @@ def plmbar_d1(
     pmm = scalef
     rescalem = np.ones(len(z)) / scalef
     for m in range(1, lmax):
-        rescalem = rescalem * u
+        rescalem *= u
         pmm = pmm * sqr[2 * m] / sqr[2 * m - 1]
         p[..., m, m] = pmm * rescalem
         dp1[..., m, m] = -m * z * p[..., m, m] / u**2
@@ -164,7 +164,7 @@ def plmbar_d1(
         dp1[..., m, m + 1] = (
             sqr[2 * m + 2] * p[..., m, m] - z * (m + 1) * p[..., m, m + 1]
         ) / u**2
-        for l in range(m + 2, lmax + 1):
+        for l in range(m + 2, lmax + 1):  # ruff: ignore[ambiguous-variable-name]
             plm = z * f1[l, m] * pm1 - f2[l, m] * pm2
             p[..., m, l] = plm * rescalem
             dp1[..., m, l] = (
@@ -178,7 +178,7 @@ def plmbar_d1(
             pm2 = pm1
             pm1 = plm
 
-    rescalem = rescalem * u
+    rescalem *= u
     pmm = pmm * sqr[2 * lmax] / sqr[2 * lmax - 1]
     p[..., lmax, lmax] = pmm * rescalem
     dp1[..., lmax, lmax] = -lmax * z * p[..., lmax, lmax] / u**2

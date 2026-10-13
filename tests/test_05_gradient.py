@@ -1,4 +1,4 @@
-import common
+import common  # ruff: ignore[implicit-namespace-package]
 import pytest
 
 from pyshtransform.full_grid.transformation import FullGridSphericalHarmonicsTransform
@@ -6,22 +6,22 @@ from pyshtransform.full_grid.transformation import FullGridSphericalHarmonicsTra
 
 @pytest.fixture(
     params=[
-        dict(
-            truncation=15,
-            num_lat=64,
-            num_lon=128,
-        ),
-        dict(
-            truncation=31,
-            num_lat=32,
-            num_lon=64,
-        ),
-        dict(
-            truncation=63,
-            num_lat=64,
-            num_lon=127,
-        ),
-    ]
+        {
+            'truncation': 15,
+            'num_lat': 64,
+            'num_lon': 128,
+        },
+        {
+            'truncation': 31,
+            'num_lat': 32,
+            'num_lon': 64,
+        },
+        {
+            'truncation': 63,
+            'num_lat': 64,
+            'num_lon': 127,
+        },
+    ],
 )
 def config(request):
     return request.param
@@ -92,12 +92,12 @@ def test_grad_phi(ds_spec, ds_05_gradient_dt_dphi):
 
 
 def test_full(
-    ds_spec, ds_05_gradient_t, ds_05_gradient_dt_dtheta, ds_05_gradient_dt_dphi
+    ds_spec, ds_05_gradient_t, ds_05_gradient_dt_dtheta, ds_05_gradient_dt_dphi,
 ):
     transformation = construct_transformation(ds_05_gradient_dt_dphi)
     ds_grid = transformation.unfolded_spec_to_grid_full(ds_spec)
     ds_grid_selected = ds_grid.drop_vars(
-        (var for var in ds_grid if var.startswith('gt') or var.startswith('gp'))
+        var for var in ds_grid if var.startswith(('gt', 'gp'))
     )
     common.test_function(
         'spec_to_grid_full_regular',
@@ -107,7 +107,7 @@ def test_full(
         atol=0,
     )
     ds_grid_selected = ds_grid.drop_vars(
-        (var for var in ds_grid if not var.startswith('gt'))
+        var for var in ds_grid if not var.startswith('gt')
     )
     ds_grid_selected = ds_grid_selected.rename({
         var: var.replace('gt', '') for var in ds_grid_selected
@@ -120,7 +120,7 @@ def test_full(
         atol=0,
     )
     ds_grid_selected = ds_grid.drop_vars(
-        (var for var in ds_grid if not var.startswith('gp'))
+        var for var in ds_grid if not var.startswith('gp')
     )
     ds_grid_selected = ds_grid_selected.rename({
         var: var.replace('gp', '') for var in ds_grid_selected

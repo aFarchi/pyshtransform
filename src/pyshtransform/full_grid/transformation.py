@@ -88,7 +88,7 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
             return ds_data
         logger.info('applying "wavelet_decomposition" transformation')
         ds_data = self.enforce_dtype(ds_data)
-        ds_data = xr.apply_ufunc(
+        return xr.apply_ufunc(
             apply_wavelet_decomposition_numpy,
             ds_data,
             self.wavelet_matrix,
@@ -100,7 +100,6 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
             dask='parallelized',
             output_dtypes=[self.dtype],
         )
-        return ds_data
 
     def folded_spec_to_grid(self, ds_data: xr.Dataset) -> xr.Dataset:
         """Applies the transformation from folded spectral- to grid space.
@@ -114,15 +113,15 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
         ds_data = self.apply_wavelet_decomposition(ds_data)
         logger.info('applying "folded_spec_to_grid" transformation')
         ds_data = self.enforce_dtype(ds_data)
-        ds_data = xr.apply_ufunc(
+        return xr.apply_ufunc(
             generic_folded_spec_to_grid_numpy,
             ds_data,
             self.grid.plm,
-            kwargs=dict(
-                num_lon=self.num_lon,
-                grad_phi=False,
-                mir_bug=False,
-            ),
+            kwargs={
+                'num_lon': self.num_lon,
+                'grad_phi': False,
+                'mir_bug': False,
+            },
             input_core_dims=[
                 ['c', 'l', 'm'],
                 ['latitude', 'l', 'm'],
@@ -130,16 +129,15 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
             output_core_dims=[['latitude', 'longitude']],
             dask='parallelized',
             output_dtypes=[self.dtype],
-            dask_gufunc_kwargs=dict(
-                output_sizes=dict(
-                    longitude=self.num_lon,
-                )
-            ),
+            dask_gufunc_kwargs={
+                'output_sizes': {
+                    'longitude': self.num_lon,
+                },
+            },
         ).assign_coords(
             latitude=self.grid.lat,
             longitude=self.grid.lon,
         )
-        return ds_data
 
     def unfolded_spec_to_grid(self, ds_data: xr.Dataset) -> xr.Dataset:
         """Applies the transformation from unfolded spectral- to grid space.
@@ -165,15 +163,15 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
         ds_data = self.apply_wavelet_decomposition(ds_data)
         logger.info('applying "folded_spec_to_grid_mir" transformation')
         ds_data = self.enforce_dtype(ds_data)
-        ds_data = xr.apply_ufunc(
+        return xr.apply_ufunc(
             generic_folded_spec_to_grid_numpy,
             ds_data,
             self.grid.plm,
-            kwargs=dict(
-                num_lon=self.num_lon,
-                grad_phi=False,
-                mir_bug=True,
-            ),
+            kwargs={
+                'num_lon': self.num_lon,
+                'grad_phi': False,
+                'mir_bug': True,
+            },
             input_core_dims=[
                 ['c', 'l', 'm'],
                 ['latitude', 'l', 'm'],
@@ -181,19 +179,19 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
             output_core_dims=[['latitude', 'longitude']],
             dask='parallelized',
             output_dtypes=[self.dtype],
-            dask_gufunc_kwargs=dict(
-                output_sizes=dict(
-                    longitude=self.num_lon,
-                )
-            ),
+            dask_gufunc_kwargs={
+                'output_sizes': {
+                    'longitude': self.num_lon,
+                },
+            },
         ).assign_coords(
             latitude=self.grid.lat,
             longitude=self.grid.lon,
         )
-        return ds_data
 
     def unfolded_spec_to_grid_mir(self, ds_data: xr.Dataset) -> xr.Dataset:
-        """Applies the transformation from unfolded spectral- to grid space with MIR bug.
+        """Applies the transformation from unfolded spectral- to grid space
+        with MIR bug.
 
         Args:
             ds_data: Dataset containing unfolded spectral coefficients.
@@ -205,9 +203,10 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
         return self.folded_spec_to_grid_mir(ds_data)
 
     def folded_spec_to_grid_grad_theta(
-        self, ds_data: xr.Dataset, prefix: str = 'gt'
+        self, ds_data: xr.Dataset, prefix: str = 'gt',
     ) -> xr.Dataset:
-        """Applies the transformation from folded spectral- to grid space with gradient with respect to latitude.
+        """Applies the transformation from folded spectral- to grid space with
+        gradient with respect to latitude.
 
         Args:
             ds_data: Dataset containing folded spectral coefficients.
@@ -222,16 +221,17 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
         new_names = (
             {var: f'{prefix}{var}' for var in ds_data} if prefix is not None else {}
         )
-        ds_data = (
-            xr.apply_ufunc(
+        return (
+            xr
+            .apply_ufunc(
                 generic_folded_spec_to_grid_numpy,
                 ds_data,
                 self.grid.alm,
-                kwargs=dict(
-                    num_lon=self.num_lon,
-                    grad_phi=False,
-                    mir_bug=False,
-                ),
+                kwargs={
+                    'num_lon': self.num_lon,
+                    'grad_phi': False,
+                    'mir_bug': False,
+                },
                 input_core_dims=[
                     ['c', 'l', 'm'],
                     ['latitude', 'l', 'm'],
@@ -239,11 +239,11 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
                 output_core_dims=[['latitude', 'longitude']],
                 dask='parallelized',
                 output_dtypes=[self.dtype],
-                dask_gufunc_kwargs=dict(
-                    output_sizes=dict(
-                        longitude=self.num_lon,
-                    )
-                ),
+                dask_gufunc_kwargs={
+                    'output_sizes': {
+                        'longitude': self.num_lon,
+                    },
+                },
             )
             .assign_coords(
                 latitude=self.grid.lat,
@@ -251,12 +251,12 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
             )
             .rename(**new_names)
         )
-        return ds_data
 
     def unfolded_spec_to_grid_grad_theta(
-        self, ds_data: xr.Dataset, prefix: str = 'gt'
+        self, ds_data: xr.Dataset, prefix: str = 'gt',
     ) -> xr.Dataset:
-        """Applies the transformation from unfolded spectral- to grid space with gradient with respect to latitude.
+        """Applies the transformation from unfolded spectral- to grid space
+        with gradient with respect to latitude.
 
         Args:
             ds_data: Dataset containing unfolded spectral coefficients.
@@ -269,9 +269,10 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
         return self.folded_spec_to_grid_grad_theta(ds_data, prefix)
 
     def folded_spec_to_grid_grad_phi(
-        self, ds_data: xr.Dataset, prefix: str = 'gp'
+        self, ds_data: xr.Dataset, prefix: str = 'gp',
     ) -> xr.Dataset:
-        """Applies the transformation from folded spectral- to grid space with gradient with respect to longitude.
+        """Applies the transformation from folded spectral- to grid space with
+        gradient with respect to longitude.
 
         Args:
             ds_data: Dataset containing folded spectral coefficients.
@@ -286,16 +287,17 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
         new_names = (
             {var: f'{prefix}{var}' for var in ds_data} if prefix is not None else {}
         )
-        ds_data = (
-            xr.apply_ufunc(
+        return (
+            xr
+            .apply_ufunc(
                 generic_folded_spec_to_grid_numpy,
                 ds_data,
                 self.grid.plm,
-                kwargs=dict(
-                    num_lon=self.num_lon,
-                    grad_phi=True,
-                    mir_bug=False,
-                ),
+                kwargs={
+                    'num_lon': self.num_lon,
+                    'grad_phi': True,
+                    'mir_bug': False,
+                },
                 input_core_dims=[
                     ['c', 'l', 'm'],
                     ['latitude', 'l', 'm'],
@@ -303,11 +305,11 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
                 output_core_dims=[['latitude', 'longitude']],
                 dask='parallelized',
                 output_dtypes=[self.dtype],
-                dask_gufunc_kwargs=dict(
-                    output_sizes=dict(
-                        longitude=self.num_lon,
-                    )
-                ),
+                dask_gufunc_kwargs={
+                    'output_sizes': {
+                        'longitude': self.num_lon,
+                    },
+                },
             )
             .assign_coords(
                 latitude=self.grid.lat,
@@ -315,12 +317,12 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
             )
             .rename(**new_names)
         )
-        return ds_data
 
     def unfolded_spec_to_grid_grad_phi(
-        self, ds_data: xr.Dataset, prefix: str = 'gp'
+        self, ds_data: xr.Dataset, prefix: str = 'gp',
     ) -> xr.Dataset:
-        """Applies the transformation from unfolded spectral- to grid space with gradient with respect to longitude.
+        """Applies the transformation from unfolded spectral- to grid space
+        with gradient with respect to longitude.
 
         Args:
             ds_data: Dataset containing unfolded spectral coefficients.
@@ -343,7 +345,7 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
         """
         logger.info('applying "grid_to_folded_spec" transformation')
         ds_data = self.enforce_dtype(ds_data)
-        ds_data = xr.apply_ufunc(
+        return xr.apply_ufunc(
             grid_to_folded_spec_numpy,
             ds_data,
             self.grid.pw,
@@ -354,13 +356,12 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
             output_core_dims=[['c', 'l', 'm']],
             dask='parallelized',
             output_dtypes=[self.dtype],
-            dask_gufunc_kwargs=dict(
-                output_sizes=dict(
-                    c=2,
-                )
-            ),
+            dask_gufunc_kwargs={
+                'output_sizes': {
+                    'c': 2,
+                },
+            },
         )
-        return ds_data
 
     def grid_to_unfolded_spec(self, ds_data: xr.Dataset) -> xr.Dataset:
         """Applies the transformation from grid- to unfolded spectral space.
@@ -375,14 +376,17 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
         return self.unfold_clm(ds_data)
 
     def folded_spec_to_grid_full(
-        self, ds_data: xr.Dataset, prefix_theta: str = 'gt', prefix_phi: str = 'gp'
+        self, ds_data: xr.Dataset, prefix_theta: str = 'gt', prefix_phi: str = 'gp',
     ) -> xr.Dataset:
-        """Applies the transformation from folded spectral- to grid space with horizontal gradients.
+        """Applies the transformation from folded spectral- to grid space with
+        horizontal gradients.
 
         Args:
             ds_data: Dataset containing folded spectral coefficients.
-            prefix_theta: Prefix added in front of data variable names for gradient with respect to latitude.
-            prefix_phi: Prefix added in front of data variable names for gradient with respect to longitude.
+            prefix_theta: Prefix added in front of data variable names for the
+                latitude gradient.
+            prefix_phi: Prefix added in front of data variable names for the
+                longitude gradient.
 
         Returns:
             Dataset containing grid coefficients with horizontal gradients.
@@ -393,14 +397,17 @@ class FullGridSphericalHarmonicsTransform(FoldingTransformation):
         return xr.merge((ds_grid_no_grad, ds_grid_grad_theta, ds_grid_grad_phi))
 
     def unfolded_spec_to_grid_full(
-        self, ds_data: xr.Dataset, prefix_theta: str = 'gt', prefix_phi: str = 'gp'
+        self, ds_data: xr.Dataset, prefix_theta: str = 'gt', prefix_phi: str = 'gp',
     ) -> xr.Dataset:
-        """Applies the transformation from unfolded spectral- to grid space with horizontal gradients.
+        """Applies the transformation from unfolded spectral- to grid space
+        with horizontal gradients.
 
         Args:
             ds_data: Dataset containing unfolded spectral coefficients.
-            prefix_theta: Prefix added in front of data variable names for gradient with respect to latitude.
-            prefix_phi: Prefix added in front of data variable names for gradient with respect to longitude.
+            prefix_theta: Prefix added in front of data variable names for the
+                latitude gradient.
+            prefix_phi: Prefix added in front of data variable names for the
+                longitude gradient.
 
         Returns:
             Dataset containing grid coefficients with horizontal gradients.
